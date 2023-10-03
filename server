@@ -1,0 +1,41 @@
+
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+ 
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/deyup_backend
+ExecStart=/home/ubuntu/deyup_backend/env/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --timeout 6000 \
+          --bind unix:/run/gunicorn.sock \
+          deyup_backend.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+server {
+    listen 80;
+    server_name 65.0.183.157;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        autoindex on;
+        alias /home/ubuntu/deyup_backend/static/;
+    }
+
+    location /media/ {
+        alias /home/ubuntu/deyup_backend/media/;
+        client_max_body_size   100m;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
