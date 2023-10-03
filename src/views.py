@@ -17,7 +17,7 @@ from .serializers import ProfileSerializer
 # Profile :
 # # subscription 
 def token_api(email):
-    url = 'http://127.0.0.1:8000/token/'
+    url = 'http://65.0.183.157/token/'
     payload =  {
             'email': email, 
             'password': email, 
