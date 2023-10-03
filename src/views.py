@@ -22,7 +22,7 @@ def user_login(request):
     get_data = json.loads(request.body)
     getEmail = get_data['email']
     if User.objects.filter(email=getEmail).exists():
-        pass
+        pass 
     else:
         User.objects.create(email=getEmail)
     
@@ -34,3 +34,5 @@ def user_login(request):
 
     }
     return JsonResponse(data)
+
+    
