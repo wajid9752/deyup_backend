@@ -12,7 +12,10 @@ import json
 from time import strptime
 from .models import User
 from .serializers import ProfileSerializer
+import jwt
 # Create your views here.
+
+
 
 # Profile :
 # # subscription 
@@ -34,11 +37,16 @@ def token_api(email):
 def user_login(request):
     try:
         get_data = json.loads(request.body)
-        getEmail = get_data['email']
+        getToken = get_data['access_token']
+        decoded_token = jwt.decode(getToken, options={"verify_signature": False})
+        
+        getEmail = decoded_token['email']
+        getName =   decoded_token['name']
         if User.objects.filter(email=getEmail).exists():
-            print(User.objects.filter(email=getEmail).first().email)
+            getEmail = User.objects.filter(email=getEmail).first().email
+            print(getEmail)
         else:
-            Obj=User.objects.create(email=getEmail)
+            Obj=User.objects.create(email=getEmail , username=getName , fcm_token=str(getToken))
             Obj.set_password(getEmail)
             Obj.save()
         
