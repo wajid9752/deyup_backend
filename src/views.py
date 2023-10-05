@@ -10,9 +10,13 @@ import datetime
 import requests
 import json
 from time import strptime
-from .models import User
+from .models import *
 from .serializers import ProfileSerializer
 import jwt
+import stripe
+import time
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 
@@ -36,10 +40,23 @@ def token_api(email):
 @api_view(['POST'])
 def user_login(request):
     try:
+        getReq=request.META
+
+        getClient=request.headers.get('clientid')
+        getPlatform=request.headers.get('platform')
+        getTimezone=request.headers.get('timezone')
+        
+        if not Security_Model.objects.filter(client_id=getClient).exists():
+                context= {
+                "data": {
+                    "token": ""
+                    }
+                    }
+                return JsonResponse(context , status=status.HTTP_401_UNAUTHORIZED)
+        
         get_data = json.loads(request.body)
         getToken = get_data['access_token']
         decoded_token = jwt.decode(getToken, options={"verify_signature": False})
-        
         getEmail = decoded_token['email']
         getName =   decoded_token['name']
         if User.objects.filter(email=getEmail).exists():
@@ -52,40 +69,71 @@ def user_login(request):
         
         getToken=token_api(getEmail)
         
-        data={
-            "status":status.HTTP_200_OK,
-            'message':'Otp sent successfully',
-            'token': getToken
-
-        }
-        return JsonResponse(data)
+        context= {
+                "data": {
+                    "token": getToken
+                    }
+                    }
+        return JsonResponse(context , status=status.HTTP_200_OK)
+        
     except Exception as e:
-        data={
-            "status":status.HTTP_500_INTERNAL_SERVER_ERROR,
-            'message':f'Internal Server Error {e}',
-            'token': ''
-
-        }
-        return JsonResponse(data)
-    
-
-
-
+        context= {
+                
+                "data": {
+                    "token": ""
+                    }
+                    }
+        return JsonResponse(context,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication]) 
 def user_profile(request):
+    getClient=request.headers.get('clientid')
+    getPlatform=request.headers.get('platform')
+    getTimezone=request.headers.get('timezone')
+    
+    if not Security_Model.objects.filter(client_id=getClient).exists():
+            data={
+            'data':{
+                    'user': "",
+                }
+            }
+            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
     data={
-            "status":status.HTTP_200_OK,
-            'message':'Profile Fetched Successfully' ,
             'data':{
                 'user': serializer.data ,
             }
         }
-    return JsonResponse(data)
+    return JsonResponse(data , status=status.HTTP_200_OK)
 
     
     
+
+@csrf_exempt
+def stripe_webhook(request):
+	stripe.api_key = settings.STRIPE_SECRET_KEY_TEST
+	time.sleep(10)
+	payload = request.body
+	signature_header = request.META['HTTP_STRIPE_SIGNATURE']
+	event = None
+	try:
+		event = stripe.Webhook.construct_event(
+			payload, signature_header, settings.STRIPE_WEBHOOK_SECRET_TEST
+		)
+	except ValueError as e:
+		return HttpResponse(status=400)
+	except stripe.error.SignatureVerificationError as e:
+		return HttpResponse(status=400)
+	if event['type'] == 'checkout.session.completed':
+		session = event['data']['object']
+		session_id = session.get('id', None)
+		time.sleep(15)
+		user_payment = UserPayment.objects.get(stripe_checkout_id=session_id)
+		user_payment.payment_bool = True
+		user_payment.save()
+	return HttpResponse(status=200)

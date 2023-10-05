@@ -110,8 +110,10 @@ class Strip_Plan(models.Model):
     status          = models.BooleanField(default=False)
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
-    
 
+    def __str__(self):
+        return self.name + "Price: " + str(self.price)
+    
 
 class Purchase_History(models.Model):
     user_id = models.ForeignKey(User , on_delete=models.CASCADE)
@@ -124,7 +126,15 @@ class Purchase_History(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return str(self.user_id.email) + "Plan: " + str(self.plan_id.name)
 
 
-
-
+class Security_Model(models.Model):
+    platform = (
+        ('Android' , 'Android'),
+        ('IOS' , 'IOS'),
+    )
+    client_id = models.CharField(max_length=100)
+    platform  = models.CharField(max_length=20 , choices=platform , default="Android")
+    timezone = models.DateTimeField(null=True , blank=True)
