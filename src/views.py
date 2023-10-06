@@ -11,7 +11,7 @@ import requests
 import json
 from time import strptime
 from .models import *
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer , stripPlanSerializer
 import jwt
 import stripe
 import time
@@ -111,8 +111,30 @@ def user_profile(request):
         }
     return JsonResponse(data , status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication]) 
+def plans_api(request):
+    getClient=request.headers.get('clientid')
+    getPlatform=request.headers.get('platform')
+    getTimezone=request.headers.get('timezone')
     
-    
+    if not Security_Model.objects.filter(client_id=getClient).exists():
+            data={
+            'data':{
+                    'plans': "",
+                }
+            }
+            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+
+    objs=Strip_Plan.objects.filter(status=True)
+    serializer=stripPlanSerializer(objs , many=True)
+    data={
+            'data':{
+                'plans': serializer.data ,
+            }
+        }
+    return JsonResponse(data , status=status.HTTP_200_OK)    
 
 @csrf_exempt
 def stripe_webhook(request):

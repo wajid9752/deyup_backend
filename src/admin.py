@@ -36,6 +36,7 @@ class Strip_PlanAdmin(admin.ModelAdmin):
         "plan_duration",
         "name",
         "description",
+        "payment_link",
         "image",
         "price",
         "duration",

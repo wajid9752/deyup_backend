@@ -105,6 +105,7 @@ class Strip_Plan(models.Model):
     name            = models.CharField(max_length=100)
     description     = models.CharField(max_length=100)
     image           = models.FileField(null=True , blank=True , upload_to="Strip-Images")
+    payment_link    = models.CharField(max_length=100)
     price           = models.BigIntegerField()
     duration        = models.CharField(max_length=50 , choices=plan_duration)
     status          = models.BooleanField(default=False)

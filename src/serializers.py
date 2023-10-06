@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User 
+from .models import User , Strip_Plan
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -34,4 +34,25 @@ class ProfileSerializer(serializers.ModelSerializer):
             "image" ,
             "fcm_token" ,
             "stripe_id" 
+        ]
+
+class stripPlanSerializer(serializers.ModelSerializer):
+    
+    image = serializers.SerializerMethodField()
+
+    def get_image(self , obj):
+        return obj.image.url if obj.image else ""
+    
+    class Meta:
+        model   = Strip_Plan
+        fields  =  [
+            "name",
+            "description",
+            "payment_link",
+            "image",
+            "price",
+            "duration",
+            "status",
+            "created_at",
+            "updated_at"
         ]
