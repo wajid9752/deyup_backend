@@ -10,5 +10,6 @@ urlpatterns = [
     
     path("login/" , user_login ),
     path("profile/" , user_profile ),
+    path("plans/" , plans_api ),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
