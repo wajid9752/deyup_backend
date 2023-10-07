@@ -119,9 +119,9 @@ class Strip_Plan(models.Model):
 class Purchase_History(models.Model):
     user_id = models.ForeignKey(User , on_delete=models.CASCADE)
     plan_id = models.ForeignKey(Strip_Plan , on_delete=models.CASCADE)
-    transaction_id = models.CharField(max_length=100)
-    plan_start_date = models.DateField()
-    plan_end_date = models.DateField()
+    transaction_id = models.CharField(max_length=100 , null=True , blank=True)
+    plan_start_date = models.DateField(null=True , blank=True)
+    plan_end_date = models.DateField(null=True , blank=True)
     plan_auto_renewal = models.BooleanField(default=False)
     status = models.BooleanField(default=False)
     created_at      = models.DateTimeField(auto_now_add=True)

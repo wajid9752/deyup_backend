@@ -46,6 +46,7 @@ class stripPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model   = Strip_Plan
         fields  =  [
+            "id",
             "name",
             "description",
             "payment_link",

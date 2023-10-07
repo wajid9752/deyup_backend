@@ -155,7 +155,20 @@ def plans_api(request):
 @authentication_classes([JWTAuthentication])
 def create_payment(request):
     try:
-        domain_url = 'http://127.0.0.1:8000/'
+        getClient=request.headers.get('clientid')
+        if not Security_Model.objects.filter(client_id=getClient).exists():
+            data={
+            'data':{
+                    'payment_link': "",
+                }
+            }
+            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+        
+        
+        getdata =  json.loads(request.body)
+        planId = getdata['plan_id'] 
+
+        domain_url = 'http://65.0.183.157/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
             
         checkout_session = stripe.checkout.Session.create(
@@ -171,10 +184,26 @@ def create_payment(request):
                     }
                 ]
             )
-        return JsonResponse({'payment_link': checkout_session['url'] } , status=status.HTTP_201_CREATED)
+        
+        Purchase_History.objects.create(
+             user_id = request.user , 
+             plan_id = Strip_Plan.objects.get(id=planId),
+             status = False
+        )
+        data={
+            'data':{
+                    'payment_link': checkout_session['url'],
+                }
+            }
+        return JsonResponse(data, status=status.HTTP_201_CREATED)
     except Exception as e:
-          print("Error is ",e)
-          return JsonResponse({'payment_link': str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+          data={
+            'data':{
+                    'payment_link': f"{e}",
+                }
+            }
+          return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def payment_successful(request):
     print(request)
