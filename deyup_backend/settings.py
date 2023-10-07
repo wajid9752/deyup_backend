@@ -27,7 +27,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     'rest_framework',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'src',
 ]
 
@@ -157,3 +159,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+STRIPE_SECRET_KEY = "sk_test_51MgLDhSCw8UwFosbFJJFSrxF6jSSFaOock1AtpKAwnjXQjMaH2oa5xh9X7ItywbtCdLWeITPtZwsx4Np3NZaMin600MhYEImAt"
+STRIPE_PRICE_ID="price_1NyCk0SCw8UwFosbptoyP7dS"
