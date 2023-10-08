@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User , Strip_Plan
+from .models import User , Strip_Plan , Purchase_History
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -57,3 +57,38 @@ class stripPlanSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at"
         ]
+
+class Purchase_HistorySerializer(serializers.ModelSerializer):
+    
+    transaction_id = serializers.SerializerMethodField()
+    plan_start_date = serializers.SerializerMethodField()
+    plan_end_date = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
+
+    def get_transaction_id(self,obj):
+        return obj.transaction_id if obj.transaction_id else ""
+    def get_plan_start_date(self,obj):
+        return obj.plan_start_date if obj.plan_start_date else ""
+    def get_plan_end_date(self,obj):
+        return obj.plan_end_date if obj.plan_end_date else ""
+    def get_created_at(self,obj):
+        return obj.created_at if obj.created_at else ""
+    def get_updated_at(self,obj):
+        return obj.updated_at if obj.updated_at else ""
+    
+    class Meta:
+        model = Purchase_History
+        fields = [
+            "plan_id",
+            "transaction_id",
+            "plan_start_date",
+            "plan_end_date",
+            "plan_auto_renewal",
+            "status",
+            "created_at",
+            "updated_at"
+        ]
+
+

@@ -11,7 +11,7 @@ import requests
 import json
 from time import strptime
 from .models import *
-from .serializers import ProfileSerializer , stripPlanSerializer
+from .serializers import ProfileSerializer , stripPlanSerializer,Purchase_HistorySerializer
 import jwt
 import stripe
 import time
@@ -118,9 +118,13 @@ def user_profile(request):
 
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
+
+    hist=Purchase_History.objects.filter(user_id=obj)
+    history = Purchase_HistorySerializer(hist , many=True)
     data={
             'data':{
                 'user': serializer.data ,
+                'subscription': history.data
             }
         }
     return JsonResponse(data , status=status.HTTP_200_OK)
