@@ -119,7 +119,7 @@ def user_profile(request):
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
 
-    hist=Purchase_History.objects.filter(user_id=obj)
+    hist    = Purchase_History.objects.filter(user_id=obj)
     history = Purchase_HistorySerializer(hist , many=True)
     data={
             'data':{
@@ -276,7 +276,8 @@ def cancel_subscription(request):
     elif sub_status == "canceled":
          msg = "Your subscription is alreday canceled"    
     
-    data={'data':{
-         'message': msg
-    } }
-    return JsonResponse(data, status=status.HTTP_200_OK)
+    data={'data':{} }
+  
+    response = JsonResponse(data ,status=status.HTTP_200_OK)
+    response['Message'] = msg
+    return response
