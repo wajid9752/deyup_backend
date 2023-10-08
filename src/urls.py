@@ -14,6 +14,7 @@ urlpatterns = [
     path("create-payment/" , create_payment ),
     path("success/" , payment_successful ),
     path("stripe_webhook/" , stripe_webhook ),
+    path("cancel-subscription/" , cancel_subscription ),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
 

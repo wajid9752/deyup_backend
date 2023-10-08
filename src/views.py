@@ -246,3 +246,37 @@ def stripe_webhook(request):
 	return HttpResponse(status=200)
 
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def cancel_subscription(request):
+    getClient=request.headers.get('clientid')
+    if not Security_Model.objects.filter(client_id=getClient).exists():
+            data={
+            'data':{
+                    'plans': "",
+                }
+            }
+            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+
+    stripe.api_key =  settings.STRIPE_SECRET_KEY
+    getdata =  json.loads(request.body)
+    subId = getdata['subscription'] 
+    plan_id = getdata['plan_id'] 
+    
+    retrieve_sub = stripe.Subscription.retrieve(subId)
+    sub_status = retrieve_sub.status
+    print(sub_status)
+    if sub_status == "active": 
+        mytest=stripe.Subscription.cancel(subId)
+        Purchase_History.objects.filter(id=plan_id).update(status=False,plan_auto_renewal=False)
+        msg = "Your subscription is canceled Successfully"
+    
+    elif sub_status == "canceled":
+         msg = "Your subscription is alreday canceled"    
+    
+    data={'data':{
+         'message': msg
+    } }
+    return JsonResponse(data, status=status.HTTP_200_OK)
