@@ -23,6 +23,8 @@ from reportlab.pdfgen import canvas
 
 
 
+def handler404(request, *args, **argv):
+    return HttpResponse("You are not supposed to be here ")
 
 
 
