@@ -24,6 +24,7 @@ grpcio-status==1.59.0
 httplib2==0.22.0
 idna==3.4
 msgpack==1.0.7
+Pillow==10.0.1
 proto-plus==1.22.3
 protobuf==4.24.3
 pyasn1==0.5.0
@@ -32,6 +33,7 @@ pycparser==2.21
 PyJWT==2.8.0
 pyparsing==3.1.1
 pytz==2023.3.post1
+reportlab==4.0.5
 requestes==0.0.1
 requests==2.31.0
 rsa==4.9

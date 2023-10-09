@@ -18,6 +18,7 @@ import time
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
+from reportlab.pdfgen import canvas
 # Create your views here.
 
 
@@ -266,4 +267,51 @@ def cancel_subscription(request):
   
     response = JsonResponse(data ,status=status.HTTP_200_OK)
     response['Message'] = msg
+    return response
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def generate_pdf(request):
+        
+    getData = json.loads(request.body)
+    getplan_id = getData['plan_id']
+
+    purchase_history = Purchase_History.objects.get(id=getplan_id)
+
+    # Create a PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="purchase_history.pdf"'
+
+    p = canvas.Canvas(response)
+    
+    # Whole Border Start
+    p.setStrokeColorRGB(0, 0, 0)  # Set border color to black
+    p.rect(50, 580, 500, 260)  # Draw outer rectangle
+
+    # First Border inside the whole border 
+    p.rect(50, 780, 500,80)  # Draw horizontal line
+    p.drawString(100, 820, f"Name: {purchase_history.user_id.username}")
+    p.drawString(100, 800, f"Email: {purchase_history.user_id.email}")
+    # End First Border inside the whole border 
+
+    # Second  Border start inside the whole border 
+    # p.rect(50, 600, 500, 140)  # Draw horizontal line
+    p.drawString(100, 740, f"Invoice ID: {purchase_history.transaction_id}")
+    p.drawString(100, 720, f"Plan Title: {purchase_history.plan_id.name}")
+    p.drawString(100, 700, f"Start Date: {purchase_history.plan_start_date}")
+    p.drawString(100, 680, f"Expiry Date: {purchase_history.plan_end_date}")
+    p.drawString(100, 660, f"Plan Description: {purchase_history.plan_id.description}")
+    p.drawString(100, 640, f"Subscription Amount: {purchase_history.subscription_amount}")
+    # End Second  Border inside the whole border 
+    
+    p.rect(50, 580, 500, 40)  # Draw horizontal line for the copyright section
+    p.drawString(100, 600, f"Copyright 2022 Probook. All Rights Reserved")
+    
+    # Whole Border end 
+
+    p.showPage()
+
+    p.save()
     return response

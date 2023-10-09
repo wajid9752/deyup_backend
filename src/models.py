@@ -123,6 +123,8 @@ class Purchase_History(models.Model):
     plan_start_date = models.DateField(null=True , blank=True)
     plan_end_date = models.DateField(null=True , blank=True)
     plan_auto_renewal = models.BooleanField(default=False)
+    subscripion_id = models.CharField(max_length=100 , null=True , blank=True)
+    subscription_amount = models.IntegerField(null=True , blank=True)
     status = models.BooleanField(default=False)
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
