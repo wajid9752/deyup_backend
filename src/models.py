@@ -43,7 +43,7 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser,PermissionsMixin):
-    username       = models.CharField(max_length=100 , null=True , blank=True)
+    username        = models.CharField(max_length=100 , null=True , blank=True)
     email           = models.CharField(max_length=100 , unique=True)
     google_id       = models.CharField(max_length=100 ,null=True , blank=True)
     apple_id        = models.CharField(max_length=100 , null=True , blank=True)

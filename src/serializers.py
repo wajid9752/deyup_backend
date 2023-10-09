@@ -90,5 +90,3 @@ class Purchase_HistorySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at"
         ]
-
-

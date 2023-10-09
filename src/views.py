@@ -22,18 +22,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 
-# Profile :
-# # subscription 
-def token_api(email):
-    url = 'http://65.0.183.157/token/'
-    payload =  {
-            'email': email, 
-            'password': email, 
-           }    
-    r = requests.post(url=url, data=payload)
-    response=json.loads(r.text)
-    print(response)
-    return response
 
 
 
@@ -41,7 +29,6 @@ def token_api(email):
 def user_login(request):
     try:
         getReq=request.META
-
         getClient=request.headers.get('clientid')
         getPlatform=request.headers.get('platform')
         getTimezone=request.headers.get('timezone')
@@ -56,6 +43,8 @@ def user_login(request):
         
         get_data = json.loads(request.body)
         getToken = get_data['access_token']
+        # social = get_data['social_type']
+        
         decoded_token = jwt.decode(getToken, options={"verify_signature": False})
         getEmail = decoded_token['email']
         getName =   decoded_token['name']
@@ -67,23 +56,19 @@ def user_login(request):
             Obj.set_password(getEmail)
             Obj.save()
         
-        getToken=token_api(getEmail)
+        user = User.objects.get(email=getEmail)
+        refresh = RefreshToken.for_user(user)
         
         context= {
                 "data": {
-                    "token": getToken['access'] ,
-                    "refresh": getToken['refresh']
+                    'token': str(refresh.access_token),
+                    'refresh_token': str(refresh),
                     }
                     }
         return JsonResponse(context , status=status.HTTP_200_OK)
         
     except Exception as e:
-        context= {
-                
-                "data": {
-                    "token": ""
-                    }
-                    }
+        context= {"data": {"token": f"{e}"}}
         return JsonResponse(context,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])      
@@ -92,13 +77,17 @@ def  logout_view(request):
         getdata =  json.loads(request.body)
         token = RefreshToken(getdata["refresh_token"])
         token.blacklist()
-        context={
-              "bacl":"listed"
-        }
-        return JsonResponse(context ,status=status.HTTP_205_RESET_CONTENT)
+        data={"data": {}}
+        response = JsonResponse(data ,status=status.HTTP_204_NO_CONTENT)
+        response['Message'] = "Logout Successfully"
+        return response
+    
     except Exception as e:
-        print("This is my error : ",e)
-        return JsonResponse(status=status.HTTP_400_BAD_REQUEST)
+        data={"data": {}}
+        response = JsonResponse(data ,status=status.HTTP_400_BAD_REQUEST)
+        response['Message'] = str(e)
+        return response
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -222,8 +211,6 @@ def payment_successful(request):
 
 
 
-
-
 @csrf_exempt
 def stripe_webhook(request):
 	stripe.api_key =  settings.STRIPE_SECRET_KEY
@@ -244,7 +231,6 @@ def stripe_webhook(request):
 		session_id = session.get('id', None)
 		time.sleep(15)
 	return HttpResponse(status=200)
-
 
 
 @api_view(['POST'])
