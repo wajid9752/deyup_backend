@@ -1,13 +1,9 @@
-from django.shortcuts import render
 from django.http import  JsonResponse , HttpResponse
-from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework import status
-import datetime
-import requests
 import json
 from time import strptime
 from .models import *
@@ -163,7 +159,7 @@ def create_payment(request):
         
         getdata =  json.loads(request.body)
         planId = getdata['plan_id'] 
-
+        getPlan = Strip_Plan.objects.get(id=planId)
         domain_url = 'http://65.0.183.157/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
             
@@ -175,7 +171,7 @@ def create_payment(request):
                 mode='subscription',
                 line_items=[
                     {
-                        'price': settings.STRIPE_PRICE_ID,
+                        'price': getPlan.payment_link,
                         'quantity': 1,
                     }
                 ]
@@ -183,7 +179,7 @@ def create_payment(request):
         
         Purchase_History.objects.create(
              user_id = request.user , 
-             plan_id = Strip_Plan.objects.get(id=planId),
+             plan_id = getPlan,
              status = False
         )
         data={
