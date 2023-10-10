@@ -135,8 +135,8 @@ class Purchase_History(models.Model):
 
 class Security_Model(models.Model):
     platform = (
-        ('Android' , 'Android'),
-        ('IOS' , 'IOS'),
+        ('android' , 'Android'),
+        ('ios' , 'IOS'),
     )
     client_id = models.CharField(max_length=100)
     platform  = models.CharField(max_length=20 , choices=platform , default="Android")

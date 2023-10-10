@@ -59,7 +59,6 @@ class stripPlanSerializer(serializers.ModelSerializer):
         ]
 
 class Purchase_HistorySerializer(serializers.ModelSerializer):
-    
     transaction_id = serializers.SerializerMethodField()
     plan_start_date = serializers.SerializerMethodField()
     plan_end_date = serializers.SerializerMethodField()

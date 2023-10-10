@@ -16,8 +16,23 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
 # Create your views here.
+        
+class Security:
 
+    @staticmethod
+    def security_check(request):
+        clientid = request.headers.get('clientid')
+        getPlatform = request.headers.get('platform')
 
+        if not Security_Model.objects.filter(client_id=clientid, platform=getPlatform).exists():
+            return False
+        return True
+
+    def send_resp(self):
+        response = JsonResponse({"data": {"token": ""}}, status=status.HTTP_401_UNAUTHORIZED)
+        response['Message'] = "Client id not matched"
+        return response         
+         
 
 def handler404(request, *args, **argv):
     return HttpResponse("You are not supposed to be here ")
@@ -27,19 +42,10 @@ def handler404(request, *args, **argv):
 @api_view(['POST'])
 def user_login(request):
     try:
-        getReq=request.META
-        getClient=request.headers.get('clientid')
-        getPlatform=request.headers.get('platform')
-        getTimezone=request.headers.get('timezone')
-        
-        if not Security_Model.objects.filter(client_id=getClient).exists():
-                context= {
-                "data": {
-                    "token": ""
-                    }
-                    }
-                return JsonResponse(context , status=status.HTTP_401_UNAUTHORIZED)
-        
+        obj = Security()
+        if not obj.security_check(request):
+            return obj.send_resp()
+            
         get_data = json.loads(request.body)
         getToken = get_data['access_token']
         # social = get_data['social_type']
@@ -92,25 +98,17 @@ def  logout_view(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication]) 
 def user_profile(request):
-    getClient=request.headers.get('clientid')
-    getPlatform=request.headers.get('platform')
-    getTimezone=request.headers.get('timezone')
-    
-    if not Security_Model.objects.filter(client_id=getClient).exists():
-            data={
-            'data':{
-                    'user': "",
-                }
-            }
-            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+    objs = Security()
+    if not objs.security_check(request):
+        getresp = objs.send_resp()
+        return getresp
 
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
 
     hist    = Purchase_History.objects.filter(user_id=obj)
     history = Purchase_HistorySerializer(hist , many=True)
-    data={
-            'data':{
+    data={'data':{
                 'user': serializer.data ,
                 'subscription': history.data
             }
@@ -121,25 +119,14 @@ def user_profile(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication]) 
 def plans_api(request):
-    getClient=request.headers.get('clientid')
-    getPlatform=request.headers.get('platform')
-    getTimezone=request.headers.get('timezone')
-    
-    if not Security_Model.objects.filter(client_id=getClient).exists():
-            data={
-            'data':{
-                    'plans': "",
-                }
-            }
-            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+    obj = Security()
+    if not obj.security_check(request):
+        getresp = obj.send_resp()
+        return getresp
 
     objs=Strip_Plan.objects.filter(status=True)
     serializer=stripPlanSerializer(objs , many=True)
-    data={
-            'data':{
-                'plans': serializer.data ,
-            }
-        }
+    data={'data':{'plans': serializer.data}}
     return JsonResponse(data , status=status.HTTP_200_OK)    
 
 @api_view(['POST'])
@@ -147,15 +134,10 @@ def plans_api(request):
 @authentication_classes([JWTAuthentication])
 def create_payment(request):
     try:
-        getClient=request.headers.get('clientid')
-        if not Security_Model.objects.filter(client_id=getClient).exists():
-            data={
-            'data':{
-                    'payment_link': "",
-                }
-            }
-            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
-        
+        obj = Security()
+        if not obj.security_check(request):
+            getresp = obj.send_resp()
+            return getresp
         
         getdata =  json.loads(request.body)
         planId = getdata['plan_id'] 
@@ -182,18 +164,10 @@ def create_payment(request):
              plan_id = getPlan,
              status = False
         )
-        data={
-            'data':{
-                    'payment_link': checkout_session['url'],
-                }
-            }
+        data={'data':{'payment_link': checkout_session['url'],}}
         return JsonResponse(data, status=status.HTTP_201_CREATED)
     except Exception as e:
-          data={
-            'data':{
-                    'payment_link': f"{e}",
-                }
-            }
+          data={'data':{'payment_link': f"{e}",}}
           return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -236,14 +210,10 @@ def stripe_webhook(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
 def cancel_subscription(request):
-    getClient=request.headers.get('clientid')
-    if not Security_Model.objects.filter(client_id=getClient).exists():
-            data={
-            'data':{
-                    'plans': "",
-                }
-            }
-            return JsonResponse(data , status=status.HTTP_401_UNAUTHORIZED)
+    obj = Security()
+    if not obj.security_check(request):
+        getresp = obj.send_resp()
+        return getresp
 
     stripe.api_key =  settings.STRIPE_SECRET_KEY
     getdata =  json.loads(request.body)
@@ -252,7 +222,7 @@ def cancel_subscription(request):
     
     retrieve_sub = stripe.Subscription.retrieve(subId)
     sub_status = retrieve_sub.status
-    print(sub_status)
+    
     if sub_status == "active": 
         mytest=stripe.Subscription.cancel(subId)
         Purchase_History.objects.filter(id=plan_id).update(status=False,plan_auto_renewal=False)
@@ -272,44 +242,30 @@ def cancel_subscription(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
 def generate_pdf(request):
-        
+    obj = Security()
+    if not obj.security_check(request):
+        getresp = obj.send_resp()
+        return getresp
+
     getData = json.loads(request.body)
     getplan_id = getData['plan_id']
-
     purchase_history = Purchase_History.objects.get(id=getplan_id)
-
-    # Create a PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="purchase_history.pdf"'
-
     p = canvas.Canvas(response)
-    
-    # Whole Border Start
     p.setStrokeColorRGB(0, 0, 0)  # Set border color to black
     p.rect(50, 580, 500, 260)  # Draw outer rectangle
-
-    # First Border inside the whole border 
     p.rect(50, 780, 500,80)  # Draw horizontal line
     p.drawString(100, 820, f"Name: {purchase_history.user_id.username}")
     p.drawString(100, 800, f"Email: {purchase_history.user_id.email}")
-    # End First Border inside the whole border 
-
-    # Second  Border start inside the whole border 
-    # p.rect(50, 600, 500, 140)  # Draw horizontal line
     p.drawString(100, 740, f"Invoice ID: {purchase_history.transaction_id}")
     p.drawString(100, 720, f"Plan Title: {purchase_history.plan_id.name}")
     p.drawString(100, 700, f"Start Date: {purchase_history.plan_start_date}")
     p.drawString(100, 680, f"Expiry Date: {purchase_history.plan_end_date}")
     p.drawString(100, 660, f"Plan Description: {purchase_history.plan_id.description}")
     p.drawString(100, 640, f"Subscription Amount: {purchase_history.subscription_amount}")
-    # End Second  Border inside the whole border 
-    
     p.rect(50, 580, 500, 40)  # Draw horizontal line for the copyright section
     p.drawString(100, 600, f"Copyright 2022 Probook. All Rights Reserved")
-    
-    # Whole Border end 
-
     p.showPage()
-
     p.save()
     return response

@@ -1,0 +1,473 @@
+{
+	"info": {
+		"_postman_id": "d3c1aaec-bd48-425a-9891-ead59a101cfc",
+		"name": "Dey-Up",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27463566"
+	},
+	"item": [
+		{
+			"name": "Server",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientid",
+								"value": "ZRK9494",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"access_token\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6ImI5YWM2MDFkMTMxZmQ0ZmZkNTU2ZmYwMzJhYWIxODg4ODBjZGUzYjkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MTYzMjcyMzQ3ODItMGQ1M20ybmwwcXRvYWQ3bm4xdGtwOW1tM2cxbnJ1bHQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MTYzMjcyMzQ3ODItOWhhZ3BkbmpyMTMzNHBxMTQxbDhjNG04Mml0azB2Z2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTE1OTEwMDE3OTE0ODI1OTYxMjMiLCJlbWFpbCI6Im1hd2F6aWQxMDUxQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiV2F6aWQgTWFsaWsiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSWd1b1REYUN1dGpDNFZRYmROU3hITWhXckpMeFdsMVR2VTJTXzVzYk05PXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IldhemlkIiwiZmFtaWx5X25hbWUiOiJNYWxpayIsImxvY2FsZSI6ImVuIiwiaWF0IjoxNjk2NTA1NjAzLCJleHAiOjE2OTY1MDkyMDN9.h0olp5l6XAqv7v0ynDHy6wnkKDM0EdIvGorw97gB3-7MGgeLyA8H0pALtDJCOiMDvA5cRwnoS30XPCkuOYG6f1ne46evhx0sFK-T3qdAbqIwYfFRSZPZON9W63CdcoIAOg_gj3eC7xjGKMXYU0UH_TS8uDdLuPKO_ZYgjCJPd6Ye07g8IFXoSmY4qpUAa7UWv1QRAvehqkWfbNBOXdBZp0KkXnGUkaPBaQwCWgSDG6FFBfTRsQhVGU3cpL5gSJ_BByf2AfBu3n8vkFg7b9GLq8L3Y5tlqYcJbDfpGjW72d2h7PVkqBZMV_IOzJ4ekQUnhgkxrGyZwVlpdx_-oT0a5g\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/login/"
+					},
+					"response": []
+				},
+				{
+					"name": "Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0NjA1ODU4LCJpYXQiOjE2OTY4Mjk4NTgsImp0aSI6IjJlZDA0NDhiY2I2ODQ4MzJiYjkxOGViZmNiYWJjMmFmIiwidXNlcl9pZCI6M30.G0SqzVT1u8gPnKpKiudCdTEh23pio9UhE6kRMJQBaSg",
+								"type": "text"
+							},
+							{
+								"key": "clientid",
+								"value": "ZRK9494",
+								"type": "text"
+							}
+						],
+						"url": "http://65.0.183.157/profile/"
+					},
+					"response": []
+				},
+				{
+					"name": "Plans",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0MjkxMTU1LCJpYXQiOjE2OTY1MTUxNTUsImp0aSI6ImYxNGU3NDczOTBmNzQ3NTRiNmY2ZmI0NDIwY2IyY2I2IiwidXNlcl9pZCI6M30.W_OeJKDl5OR68rFclPxu28lQoxHPEi7jUc-t20VldIo",
+								"type": "text"
+							},
+							{
+								"key": "clientid",
+								"value": "ZRK9494",
+								"type": "text"
+							}
+						],
+						"url": "http://65.0.183.157/plans/"
+					},
+					"response": []
+				},
+				{
+					"name": "Create payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0MjkxMTU1LCJpYXQiOjE2OTY1MTUxNTUsImp0aSI6ImYxNGU3NDczOTBmNzQ3NTRiNmY2ZmI0NDIwY2IyY2I2IiwidXNlcl9pZCI6M30.W_OeJKDl5OR68rFclPxu28lQoxHPEi7jUc-t20VldIo",
+								"type": "text"
+							},
+							{
+								"key": "clientid",
+								"value": "ZRK9494",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"plan_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/create-payment/"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Subscription",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0MjkxMTU1LCJpYXQiOjE2OTY1MTUxNTUsImp0aSI6ImYxNGU3NDczOTBmNzQ3NTRiNmY2ZmI0NDIwY2IyY2I2IiwidXNlcl9pZCI6M30.W_OeJKDl5OR68rFclPxu28lQoxHPEi7jUc-t20VldIo",
+								"type": "text"
+							},
+							{
+								"key": "clientid",
+								"value": "ZRK9494",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subscription\": \"sub_1NyYHpSCw8UwFosb1FvJzRXk\",\r\n    \"plan_id\": 1 \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/cancel-subscription/"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5NjkxNTYyNiwiaWF0IjoxNjk2ODI5MjI2LCJqdGkiOiI1MTFiYmIxYmU0NDU0ZTdkYjA3YzVmYjZiMTZhOGZkOCIsInVzZXJfaWQiOjN9.naUqlppuycrVVpMwcbf_4JWxLv_MulJ05YqIAT1IyuM\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/login/refresh/"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5NjkxNzcxMSwiaWF0IjoxNjk2ODMxMzExLCJqdGkiOiJiMDE4ZDdhNjRjNWE0NGM2YmMxZGFhZmEyMGQyYmQ0MSIsInVzZXJfaWQiOjN9.oaRB9fkE9Jugk6Aq2gJHATXY2k_gUHVOtfIW-TfAPMU\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/logout/"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk2ODM2MzYzLCJpYXQiOjE2OTY4MzUxNjMsImp0aSI6Ijk3NzdkZjE2Mjc2MTRmMzM5MzllZTYzMTBiODAzOWQxIiwidXNlcl9pZCI6M30.dI5MsDDgMin2lGf2TSx8emYWkLpAQ_-w6TfsGaAzsdw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"plan_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://65.0.183.157/generate-pdf/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk2ODMwMjg5LCJpYXQiOjE2OTY4MjkwODksImp0aSI6IjU0MTFjNzYyZjFhNjQxMWE4NDJjODNiYjFmZmZjNjZjIiwidXNlcl9pZCI6M30.C7Yz3pwn0Ri3EKDk2-7nLeoMLxRNRR1qcDJlq_xaUY4",
+						"type": "text"
+					},
+					{
+						"key": "clientid",
+						"value": "ZRK9494",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/profile/"
+			},
+			"response": []
+		},
+		{
+			"name": "Plans APIS",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0Mzc0ODg0LCJpYXQiOjE2OTY1OTg4ODQsImp0aSI6ImQzNjA0YzAwMGM4NzRmYmFiYTI4ODg5YWUyZGQ2NjBhIiwidXNlcl9pZCI6M30.UEvE4GgbYFkAmqEKedxPzR2zT72OZkyq4bIw_7BNAeQ",
+						"type": "text"
+					},
+					{
+						"key": "clientid",
+						"value": "ZRK9494",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8000/plans/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"plans",
+						""
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5NjkxNTU4NiwiaWF0IjoxNjk2ODI5MTg2LCJqdGkiOiJhZGZlNDIxMmE2NGE0ZjUwYTc4NDJkMzBmOWRhNzcxYiIsInVzZXJfaWQiOjN9.6A2PGMDg5rqp2G98BNgnS-LXG7IDJN-JNC0JS371Wfc\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/logout/"
+			},
+			"response": []
+		},
+		{
+			"name": "Create-Pyament",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk2ODQ2OTMxLCJpYXQiOjE2OTY4NDU3MzEsImp0aSI6IjhiZTg0ZWM5MDVhYjRkMTJiYjk4YmVjMDUxOGJhN2Y2IiwidXNlcl9pZCI6M30.XnBToHMjMLzepCoKVuMNGAKpnEWAvzCtdAh7hXG_pbQ",
+						"type": "text"
+					},
+					{
+						"key": "clientid",
+						"value": "ZRK9494",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"plan_id\": 1 \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/create-payment/"
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Webhoook",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \r\n}"
+				},
+				"url": "http://127.0.0.1:8000/my_webhook_view/"
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Subscription",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzA0Mzc0ODg0LCJpYXQiOjE2OTY1OTg4ODQsImp0aSI6ImQzNjA0YzAwMGM4NzRmYmFiYTI4ODg5YWUyZGQ2NjBhIiwidXNlcl9pZCI6M30.UEvE4GgbYFkAmqEKedxPzR2zT72OZkyq4bIw_7BNAeQ",
+						"type": "text"
+					},
+					{
+						"key": "clientid",
+						"value": "ZRK9494",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"subscription\": \"sub_1NyYHpSCw8UwFosb1FvJzRXk\",\r\n    \"plan_id\": 1 \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/cancel-subscription/"
+			},
+			"response": []
+		},
+		{
+			"name": "Referesh Token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5NjkxNTU4NiwiaWF0IjoxNjk2ODI5MTg2LCJqdGkiOiJhZGZlNDIxMmE2NGE0ZjUwYTc4NDJkMzBmOWRhNzcxYiIsInVzZXJfaWQiOjN9.6A2PGMDg5rqp2G98BNgnS-LXG7IDJN-JNC0JS371Wfc\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/login/refresh/"
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "clientid",
+						"value": "ZRK9494",
+						"type": "text"
+					},
+					{
+						"key": "platform",
+						"value": "android",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "timezone",
+						"value": "11:00",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"access_token\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6ImM2MjYzZDA5NzQ1YjUwMzJlNTdmYTZlMWQwNDFiNzdhNTQwNjZkYmQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MTYzMjcyMzQ3ODItMGQ1M20ybmwwcXRvYWQ3bm4xdGtwOW1tM2cxbnJ1bHQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MTYzMjcyMzQ3ODItOWhhZ3BkbmpyMTMzNHBxMTQxbDhjNG04Mml0azB2Z2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTE1OTEwMDE3OTE0ODI1OTYxMjMiLCJlbWFpbCI6Im1hd2F6aWQxMDUxQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiV2F6aWQgTWFsaWsiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSWd1b1REYUN1dGpDNFZRYmROU3hITWhXckpMeFdsMVR2VTJTXzVzYk05PXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IldhemlkIiwiZmFtaWx5X25hbWUiOiJNYWxpayIsImxvY2FsZSI6ImVuIiwiaWF0IjoxNjk2NzcxOTkwLCJleHAiOjE2OTY3NzU1OTB9.szEj6nqoxOxmgCO9Dkg8J4guee1kQd-FjUYsgXEkm8buVeO7n37oSDrHNiW3gg-oZUbrhUh1tfCn07SfMrK14rR8aeZvkUVYpfwmavqBp3Nr2vXqz4Ped_RGbrEAzMl7IoXapr1zKrgxpMhjj933knBe8I2Wv-rhlQwQGpw0phNdDVJmse7BcWlWEwk8UX0dAhjFV9dr2nsrK_yP6ctWrhOnadUVTW6pJAMB9uGPGW5EUeKLyP6gsQNM1-N5oSzsuVBb4NbR4iYj9SRElJtojiHDS10CHzKTBuTmZyF4LhENj7SBsW5btVi_Hmhb6NHAyeI7sHTXRh0Yvi2Pu5m4kA\" ,\r\n    \"social_type\": \"google\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/login/"
+			},
+			"response": []
+		},
+		{
+			"name": "Generate PDF",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk2ODM0NTEyLCJpYXQiOjE2OTY4MzMzMTIsImp0aSI6ImQzZDBiOTBmOWY5MTRjZGJhZWM0NTI0ZDQ3ZjM5OGEwIiwidXNlcl9pZCI6M30.-QZpC2-Zeu5xwJbsflWuIt-9TelajbfuGFAmYapXFhg",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"plan_id\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/generate-pdf/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"generate-pdf",
+						""
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

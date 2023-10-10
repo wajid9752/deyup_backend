@@ -10,14 +10,25 @@ To get this repository, run the following command inside your git enabled termin
 git clone https://github.com/saprahits/deyup_python.git
 ```
 
-Download django usig pip
-```bash
-sudo apt install python3-pip -y
+ 
+Install environment first
+``` bash
+sudo  pip3 install virtualenv
 ```
-```bash
-pip install django
+Create Environment
+```bash 
+virtualenv env
 ```
-Once you have downloaded django, go to the cloned repo directory and run the following command
+
+Activate the environment 
+```bash 
+source env/bin/activate
+```
+
+Install the all requiements using requirements.txt file in active environment
+```bash
+pip install -r requirements.txt
+```
 
 ```bash
 python3 manage.py makemigrations
