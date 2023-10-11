@@ -196,16 +196,14 @@ def stripe_webhook(request):
             payload, signature_header, WEB_SECRET
         )
         testing_model.objects.create(payload=str(event),text=str(event['type']))
-        email = event["data"]["object"]["charges"]["data"][0]["billing_details"]["email"]
-        invoice = event["data"]["object"]["charges"]["data"][0]['invoice']
-        sub = event["data"]["object"]["payment_method_options"]['card']['mandate_options']['reference']
+        invoice = event["data"]["object"]["invoice"]
         
         
-        get_obj=Purchase_History.objects.filter(user_id__email=email).last()
+        
+        get_obj=Purchase_History.objects.get(id=7)
         get_obj.status=True 
         get_obj.transaction_id=invoice 
         get_obj.plan_auto_renewal=True 
-        get_obj.subscripion_id=str(sub) 
         get_obj.plan_start_date = date.today()
         get_obj.save()
         
