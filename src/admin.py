@@ -1,11 +1,6 @@
 from django.contrib import admin
-
-# Register your models here.
 from django.contrib.auth.admin import UserAdmin
 from .models import *
-
-
-
 
 class UserAccountAdmin(UserAdmin):
     list_display=('email','username')
@@ -70,3 +65,4 @@ class Security_ModelAdmin(admin.ModelAdmin):
         "timezone"
     )
 
+admin.site.register(testing_model)

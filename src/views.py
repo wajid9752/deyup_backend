@@ -140,9 +140,9 @@ def create_payment(request):
             getresp = obj.send_resp()
             return getresp
         
-        getdata =  json.loads(request.body)
-        planId = getdata['plan_id'] 
-        getPlan = Strip_Plan.objects.get(id=planId)
+        getdata =   json.loads(request.body)
+        planId =    getdata['plan_id'] 
+        getPlan =   Strip_Plan.objects.get(id=planId)
         domain_url = 'https://deyup.in/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
             
@@ -193,10 +193,11 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, signature_header, WEB_SECRET
         )
+        testing_model.objects.create(payload=str(event),text=str(event['type']))
         email = event["data"]["object"]["charges"]["data"][0]["billing_details"]["email"]
         invoice = event["data"]["object"]["charges"]["data"][0]['invoice']
         sub = event["data"]["object"]["payment_method_options"]['card']['mandate_options']['reference']
-        amount = int(event["data"]["object"]['amount_received'])//100
+        
         
         get_obj=Purchase_History.objects.filter(user_id__email=email).last()
         get_obj.status=True 
@@ -204,7 +205,6 @@ def stripe_webhook(request):
         get_obj.plan_auto_renewal=True 
         get_obj.subscripion_id=str(sub) 
         get_obj.plan_start_date = date.today()
-        get_obj.subscription_amount = amount
         get_obj.save()
         
     except ValueError as e:

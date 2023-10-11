@@ -141,3 +141,13 @@ class Security_Model(models.Model):
     client_id = models.CharField(max_length=100)
     platform  = models.CharField(max_length=20 , choices=platform , default="Android")
     timezone = models.DateTimeField(null=True , blank=True)
+
+class testing_model(models.Model):
+    payload = models.TextField(max_length=1000)
+    text = models.CharField(max_length=100)
+
+    created_at              = models.DateTimeField(auto_now_add=True)
+    updated_at              = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.text
