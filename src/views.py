@@ -15,6 +15,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
+from datetime import date
 # Create your views here.
         
 class Security:
@@ -142,12 +143,12 @@ def create_payment(request):
         getdata =  json.loads(request.body)
         planId = getdata['plan_id'] 
         getPlan = Strip_Plan.objects.get(id=planId)
-        domain_url = 'http://65.0.183.157/'
+        domain_url = 'https://deyup.in/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
             
         checkout_session = stripe.checkout.Session.create(
                 customer_email =    request.user.email,
-                success_url=domain_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+                success_url=domain_url + 'success/?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url=domain_url + 'cancel/',
                 payment_method_types=['card'],
                 mode='subscription',
@@ -171,39 +172,69 @@ def create_payment(request):
           return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 def payment_successful(request):
-    print(request)
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id', None)
-    print("checkout_session_id is",checkout_session_id)
     session = stripe.checkout.Session.retrieve(checkout_session_id)
-    print("session",session)
     customer = stripe.Customer.retrieve(session.customer)
-    print("customer",customer)
     return HttpResponse("All Good Payment is success")
-
 
 
 @csrf_exempt
 def stripe_webhook(request):
-	stripe.api_key =  settings.STRIPE_SECRET_KEY
-	time.sleep(10)
-	payload = request.body
-	signature_header = request.META['HTTP_STRIPE_SIGNATURE']
-	event = None
-	try:
-		event = stripe.Webhook.construct_event(
-			payload, signature_header, settings.STRIPE_WEBHOOK_SECRET_TEST
-		)
-	except ValueError as e:
-		return HttpResponse(status=400)
-	except stripe.error.SignatureVerificationError as e:
-		return HttpResponse(status=400)
-	if event['type'] == 'checkout.session.completed':
-		session = event['data']['object']
-		session_id = session.get('id', None)
-		time.sleep(15)
-	return HttpResponse(status=200)
+    WEB_SECRET = "whsec_D3MeMSkMgNMSwWFcM0FdxdpL65gKu1aQ"
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    time.sleep(10)
+    payload = request.body
+    signature_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, signature_header, WEB_SECRET
+        )
+        email = event["data"]["object"]["charges"]["data"][0]["billing_details"]["email"]
+        invoice = event["data"]["object"]["charges"]["data"][0]['invoice']
+        sub = event["data"]["object"]["payment_method_options"]['card']['mandate_options']['reference']
+        amount = int(event["data"]["object"]['amount_received'])//100
+        
+        get_obj=Purchase_History.objects.filter(user_id__email=email).last()
+        get_obj.status=True 
+        get_obj.transaction_id=invoice 
+        get_obj.plan_auto_renewal=True 
+        get_obj.subscripion_id=str(sub) 
+        get_obj.plan_start_date = date.today()
+        get_obj.subscription_amount = amount
+        get_obj.save()
+        
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        session_id = session.get('id', None)
+        time.sleep(15)
+    return HttpResponse(status=200)
+
+
+
+@api_view(['POST'])
+def generate_secret(request):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    endpoint = stripe.WebhookEndpoint.create(
+    url='https://deyup.in/stripe_webhook/',
+    enabled_events=[
+        'payment_intent.payment_failed',
+        'payment_intent.succeeded',
+    ],
+    )
+    print(endpoint)
+
+    return JsonResponse(endpoint)
+
+
 
 
 @api_view(['POST'])

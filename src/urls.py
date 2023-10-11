@@ -15,6 +15,7 @@ urlpatterns = [
     path("stripe_webhook/" , stripe_webhook ),
     path("cancel-subscription/" , cancel_subscription ),
     path("generate-pdf/" , generate_pdf ),
+    path("generate_secret/" , generate_secret ),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
