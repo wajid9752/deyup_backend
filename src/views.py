@@ -176,7 +176,9 @@ def create_payment(request):
 def payment_successful(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id', None)
+    testing_model.objects.create(payload=str(checkout_session_id),text="checkout_session_id")
     session = stripe.checkout.Session.retrieve(checkout_session_id)
+    testing_model.objects.create(payload=str(session),text="session")
     customer = stripe.Customer.retrieve(session.customer)
     return HttpResponse("All Good Payment is success")
 
