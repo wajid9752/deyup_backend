@@ -11,7 +11,7 @@ class UserAccountAdmin(UserAdmin):
     fieldsets=(
         ('Personal',
             {
-                'fields':('username','email')
+                'fields':('username','email','stripe_id')
             }),
         (
             'Details',
@@ -65,4 +65,10 @@ class Security_ModelAdmin(admin.ModelAdmin):
         "timezone"
     )
 
-admin.site.register(testing_model)
+@admin.register(testing_model)
+class testing_modelAdmin(admin.ModelAdmin):
+    list_display = (
+        "text",
+        "created_at",
+        "updated_at",
+    )
