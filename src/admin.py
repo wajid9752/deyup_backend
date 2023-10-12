@@ -47,7 +47,7 @@ class Purchase_HistoryAdmin(admin.ModelAdmin):
     list_display = (
         "user_id",
         "plan_id",
-        "transaction_id",
+        "invoice",
         "plan_start_date",
         "plan_end_date",
         "plan_auto_renewal",

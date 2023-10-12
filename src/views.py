@@ -17,23 +17,31 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
 from datetime import date
 # Create your views here.
-        
-class Security:
 
+class Security:
     @staticmethod
     def security_check(request):
         clientid = request.headers.get('clientid')
         getPlatform = request.headers.get('platform')
 
-        if not Security_Model.objects.filter(client_id=clientid, platform=getPlatform).exists():
-            return False
-        return True
+        if not Security_Model.objects.filter(client_id=clientid).exists():
+            return Security.send_client()
+        if not Security_Model.objects.filter(platform=getPlatform).exists():
+            return Security.send_platform()
+        
+        return "ok"
 
-    def send_resp(self):
-        response = JsonResponse({"data": {"token": ""}}, status=status.HTTP_401_UNAUTHORIZED)
+    @staticmethod
+    def send_client():
+        response = JsonResponse({"data": {}}, status=status.HTTP_400_BAD_REQUEST)
         response['Message'] = "Client id not matched"
-        return response         
-         
+        return response
+
+    @staticmethod
+    def send_platform():
+        response = JsonResponse({"data": {}}, status=status.HTTP_400_BAD_REQUEST)
+        response['Message'] = "Provide the Right Platform."
+        return response
 
 def handler404(request, *args, **argv):
     return HttpResponse("You are not supposed to be here ")
@@ -44,8 +52,8 @@ def handler404(request, *args, **argv):
 def user_login(request):
     try:
         obj = Security()
-        if not obj.security_check(request):
-            return obj.send_resp()
+        if not obj.security_check(request) == 'ok':
+            return obj.security_check(request)
             
         get_data = json.loads(request.body)
         getToken = get_data['access_token']
@@ -99,10 +107,9 @@ def  logout_view(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication]) 
 def user_profile(request):
-    objs = Security()
-    if not objs.security_check(request):
-        getresp = objs.send_resp()
-        return getresp
+    obj = Security()
+    if not obj.security_check(request) == 'ok':
+        return obj.security_check(request)
 
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
@@ -121,9 +128,8 @@ def user_profile(request):
 @authentication_classes([JWTAuthentication]) 
 def plans_api(request):
     obj = Security()
-    if not obj.security_check(request):
-        getresp = obj.send_resp()
-        return getresp
+    if not obj.security_check(request) == 'ok':
+        return obj.security_check(request)
 
     objs=Strip_Plan.objects.filter(status=True)
     serializer=stripPlanSerializer(objs , many=True)
@@ -136,14 +142,14 @@ def plans_api(request):
 def create_payment(request):
     try:
         obj = Security()
-        if not obj.security_check(request):
-            getresp = obj.send_resp()
-            return getresp
+        if not obj.security_check(request) == 'ok':
+            return obj.security_check(request)
         
         getdata =   json.loads(request.body)
         planId =    getdata['plan_id'] 
         getPlan =   Strip_Plan.objects.get(id=planId)
         domain_url = 'https://deyup.in/'
+        # domain_url = 'http://127.0.0.1:8000/'
         stripe.api_key = settings.STRIPE_SECRET_KEY
             
         checkout_session = stripe.checkout.Session.create(
@@ -159,29 +165,56 @@ def create_payment(request):
                     }
                 ]
             )
-        
-        Purchase_History.objects.create(
-             user_id = request.user , 
-             plan_id = getPlan,
-             status = False
+        testing_model.objects.create(
+            payload = str(checkout_session) ,
+            text = "Create Payment Api"
         )
-        data={'data':{'payment_link': checkout_session['url'],}}
+
+        Purchase_History.objects.create(
+            user_id = request.user , 
+            plan_id = getPlan,
+            payment_status = checkout_session['payment_status'] ,
+            status = False ,
+            stripe_id = checkout_session['id']
+        )
+        
+        data={'data':{'payment_link': checkout_session['url']}}
         return JsonResponse(data, status=status.HTTP_201_CREATED)
+    
     except Exception as e:
-          data={'data':{'payment_link': f"{e}",}}
-          return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        data={'data':{'payment_link': f"{e}",}}
+        return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
 def payment_successful(request):
+    from datetime import datetime
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id', None)
     testing_model.objects.create(payload=str(checkout_session_id),text="checkout_session_id")
     session = stripe.checkout.Session.retrieve(checkout_session_id)
-    testing_model.objects.create(payload=str(session),text="session")
+    testing_model.objects.create(payload=str(session),text="payment-session")
+    email             = session["customer_email"]
+    stripid          = session["id"]   
+    paymentstatus     = session["payment_status"]
+    customer          = session["customer"]
+    subscription      = session["subscription"]
+    invoice_id        = session["invoice"]
+    amount_total      = session["amount_total"] // 100
+    timestamp = session[ "expires_at"]
+    expiry = datetime.utcfromtimestamp(timestamp)
+    
+    Purchase_History.objects.filter(user_id__email=email ,stripe_id=stripid ).update(
+        customer_id         = customer ,
+        invoice             = invoice_id ,
+        subscripion_id      = subscription ,
+        subscription_amount = amount_total,
+        payment_status      = paymentstatus,
+        plan_start_date     = date.today(),
+        plan_end_date       = expiry.date(),
+    )
     customer = stripe.Customer.retrieve(session.customer)
     return HttpResponse("All Good Payment is success")
-
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -196,16 +229,15 @@ def stripe_webhook(request):
             payload, signature_header, WEB_SECRET
         )
         testing_model.objects.create(payload=str(event),text=str(event['type']))
-        invoice = event["data"]["object"]["invoice"]
+        customer = event["data"]["object"]["customer"]
+        invoiceid = event["data"]["object"]["invoice"]
         
         
-        
-        get_obj=Purchase_History.objects.get(id=7)
-        get_obj.status=True 
-        get_obj.transaction_id=invoice 
-        get_obj.plan_auto_renewal=True 
-        get_obj.plan_start_date = date.today()
-        get_obj.save()
+        get_obj=Purchase_History.objects.filter(customer_id=customer , invoice=invoiceid).last()
+        if get_obj:
+            get_obj.status=True 
+            get_obj.plan_auto_renewal=True 
+            get_obj.save()
         
     except ValueError as e:
         return HttpResponse(status=400)
@@ -216,7 +248,6 @@ def stripe_webhook(request):
         session_id = session.get('id', None)
         time.sleep(15)
     return HttpResponse(status=200)
-
 
 
 @api_view(['POST'])
@@ -230,10 +261,7 @@ def generate_secret(request):
         'payment_intent.succeeded',
     ],
     )
-    print(endpoint)
-
     return JsonResponse(endpoint)
-
 
 
 
@@ -242,9 +270,8 @@ def generate_secret(request):
 @authentication_classes([JWTAuthentication])
 def cancel_subscription(request):
     obj = Security()
-    if not obj.security_check(request):
-        getresp = obj.send_resp()
-        return getresp
+    if not obj.security_check(request) == 'ok':
+        return obj.security_check(request)
 
     stripe.api_key =  settings.STRIPE_SECRET_KEY
     getdata =  json.loads(request.body)
@@ -274,9 +301,8 @@ def cancel_subscription(request):
 @authentication_classes([JWTAuthentication])
 def generate_pdf(request):
     obj = Security()
-    if not obj.security_check(request):
-        getresp = obj.send_resp()
-        return getresp
+    if not obj.security_check(request) == 'ok':
+        return obj.security_check(request)
 
     getData = json.loads(request.body)
     getplan_id = getData['plan_id']
@@ -289,7 +315,7 @@ def generate_pdf(request):
     p.rect(50, 780, 500,80)  # Draw horizontal line
     p.drawString(100, 820, f"Name: {purchase_history.user_id.username}")
     p.drawString(100, 800, f"Email: {purchase_history.user_id.email}")
-    p.drawString(100, 740, f"Invoice ID: {purchase_history.transaction_id}")
+    p.drawString(100, 740, f"Invoice ID: {purchase_history.invoice}")
     p.drawString(100, 720, f"Plan Title: {purchase_history.plan_id.name}")
     p.drawString(100, 700, f"Start Date: {purchase_history.plan_start_date}")
     p.drawString(100, 680, f"Expiry Date: {purchase_history.plan_end_date}")

@@ -59,15 +59,21 @@ class stripPlanSerializer(serializers.ModelSerializer):
         ]
 
 class Purchase_HistorySerializer(serializers.ModelSerializer):
-    transaction_id = serializers.SerializerMethodField()
+    invoice = serializers.SerializerMethodField()
+    customer_id = serializers.SerializerMethodField()
+    stripe_id = serializers.SerializerMethodField()
+    subscripion_id = serializers.SerializerMethodField()
+    payment_status = serializers.SerializerMethodField()
+    subscription_amount = serializers.SerializerMethodField()
+
     plan_start_date = serializers.SerializerMethodField()
     plan_end_date = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
 
 
-    def get_transaction_id(self,obj):
-        return obj.transaction_id if obj.transaction_id else ""
+    def get_invoice(self,obj):
+        return obj.invoice if obj.invoice else ""
     def get_plan_start_date(self,obj):
         return obj.plan_start_date if obj.plan_start_date else ""
     def get_plan_end_date(self,obj):
@@ -76,14 +82,29 @@ class Purchase_HistorySerializer(serializers.ModelSerializer):
         return obj.created_at if obj.created_at else ""
     def get_updated_at(self,obj):
         return obj.updated_at if obj.updated_at else ""
+    def get_customer_id(self,obj):
+        return obj.customer_id if obj.customer_id else ""
+    def get_stripe_id(self,obj):
+        return obj.stripe_id if obj.stripe_id else ""
+    def get_subscripion_id(self,obj):
+        return obj.subscripion_id if obj.subscripion_id else ""
+    def get_payment_status(self,obj):
+        return obj.payment_status if obj.payment_status else ""
+    def get_subscription_amount(self,obj):
+        return obj.subscription_amount if obj.subscription_amount else ""
     
     class Meta:
         model = Purchase_History
         fields = [
             "plan_id",
-            "transaction_id",
+            "invoice",
+            "customer_id",
+            "stripe_id",
+            "subscripion_id",
             "plan_start_date",
             "plan_end_date",
+            "subscription_amount",
+            "payment_status",
             "plan_auto_renewal",
             "status",
             "created_at",
