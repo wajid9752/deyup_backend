@@ -64,9 +64,8 @@ def user_login(request):
         getName =   decoded_token['name']
         if User.objects.filter(email=getEmail).exists():
             getEmail = User.objects.filter(email=getEmail).first().email
-            print(getEmail)
         else:
-            Obj=User.objects.create(email=getEmail , username=getName , fcm_token=str(getToken))
+            Obj=User.objects.create(email=getEmail , username=getName)
             Obj.set_password(getEmail)
             Obj.save()
         
@@ -306,21 +305,21 @@ def generate_pdf(request):
 
     getData = json.loads(request.body)
     getplan_id = getData['plan_id']
-    purchase_history = Purchase_History.objects.get(id=getplan_id)
+    purchase_history = Purchase_History.objects.get(id=getplan_id ,user_id=request.user )
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="purchase_history.pdf"'
     p = canvas.Canvas(response)
     p.setStrokeColorRGB(0, 0, 0)  # Set border color to black
     p.rect(50, 580, 500, 260)  # Draw outer rectangle
     p.rect(50, 780, 500,80)  # Draw horizontal line
-    p.drawString(100, 820, f"Name: {purchase_history.user_id.username}")
-    p.drawString(100, 800, f"Email: {purchase_history.user_id.email}")
+    p.drawString(100, 820, f"Name:       {purchase_history.user_id.username}")
+    p.drawString(100, 800, f"Email:      {purchase_history.user_id.email}")
     p.drawString(100, 740, f"Invoice ID: {purchase_history.invoice}")
     p.drawString(100, 720, f"Plan Title: {purchase_history.plan_id.name}")
     p.drawString(100, 700, f"Start Date: {purchase_history.plan_start_date}")
-    p.drawString(100, 680, f"Expiry Date: {purchase_history.plan_end_date}")
-    p.drawString(100, 660, f"Plan Description: {purchase_history.plan_id.description}")
-    p.drawString(100, 640, f"Subscription Amount: {purchase_history.subscription_amount}")
+    p.drawString(100, 680, f"Expiry Date:{purchase_history.plan_end_date}")
+    p.drawString(100, 660, f"Plan Description:{purchase_history.plan_id.description}")
+    p.drawString(100, 640, f"Subscription Amount:  {purchase_history.subscription_amount}")
     p.rect(50, 580, 500, 40)  # Draw horizontal line for the copyright section
     p.drawString(100, 600, f"Copyright 2022 Probook. All Rights Reserved")
     p.showPage()
