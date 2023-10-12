@@ -96,6 +96,7 @@ class Purchase_HistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Purchase_History
         fields = [
+            "id",
             "plan_id",
             "invoice",
             "customer_id",
