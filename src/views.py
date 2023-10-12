@@ -65,19 +65,18 @@ def user_login(request):
         if User.objects.filter(email=getEmail).exists():
             getEmail = User.objects.filter(email=getEmail).first().email
         else:
-            customer = stripe.Customer.create(email=getEmail)
+            customer = stripe.Customer.create(email=getEmail,name=getName)
             Obj=User.objects.create(email=getEmail , username=getName ,stripe_id=customer['id'] )
             Obj.set_password(getEmail)
             Obj.save()
                     
         user = User.objects.get(email=getEmail)
         if not user.stripe_id:
-            customer = stripe.Customer.create(email=user.email)
+            customer = stripe.Customer.create(email=user.email,name=user.username)
             user.stripe_id=customer['id']
             user.save()
 
         refresh = RefreshToken.for_user(user)
-        
         context= {
                 "data": {
                     'token': str(refresh.access_token),
@@ -154,8 +153,8 @@ def create_payment(request):
         getdata =   json.loads(request.body)
         planId =    getdata['plan_id'] 
         getPlan =   Strip_Plan.objects.get(id=planId)
-        #domain_url = 'https://deyup.in/'
-        domain_url = 'http://127.0.0.1:8000/'
+        domain_url = 'https://deyup.in/'
+        #domain_url = 'http://127.0.0.1:8000/'
             
         checkout_session = stripe.checkout.Session.create(
                 customer= request.user.stripe_id,
