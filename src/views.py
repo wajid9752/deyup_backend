@@ -17,7 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
 from datetime import date
 # Create your views here.
-
+stripe.api_key = settings.STRIPE_SECRET_KEY
 class Security:
     @staticmethod
     def security_check(request):
@@ -65,11 +65,17 @@ def user_login(request):
         if User.objects.filter(email=getEmail).exists():
             getEmail = User.objects.filter(email=getEmail).first().email
         else:
-            Obj=User.objects.create(email=getEmail , username=getName)
+            customer = stripe.Customer.create(email=getEmail)
+            Obj=User.objects.create(email=getEmail , username=getName ,stripe_id=customer['id'] )
             Obj.set_password(getEmail)
             Obj.save()
-        
+                    
         user = User.objects.get(email=getEmail)
+        if not user.stripe_id:
+            customer = stripe.Customer.create(email=user.email)
+            user.stripe_id=customer['id']
+            user.save()
+
         refresh = RefreshToken.for_user(user)
         
         context= {
@@ -140,6 +146,7 @@ def plans_api(request):
 @authentication_classes([JWTAuthentication])
 def create_payment(request):
     try:
+        
         obj = Security()
         if not obj.security_check(request) == 'ok':
             return obj.security_check(request)
@@ -147,12 +154,11 @@ def create_payment(request):
         getdata =   json.loads(request.body)
         planId =    getdata['plan_id'] 
         getPlan =   Strip_Plan.objects.get(id=planId)
-        domain_url = 'https://deyup.in/'
-        # domain_url = 'http://127.0.0.1:8000/'
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+        #domain_url = 'https://deyup.in/'
+        domain_url = 'http://127.0.0.1:8000/'
             
         checkout_session = stripe.checkout.Session.create(
-                customer_email =    request.user.email,
+                customer= request.user.stripe_id,
                 success_url=domain_url + 'success/?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url=domain_url + 'cancel/',
                 payment_method_types=['card'],
@@ -188,18 +194,17 @@ def create_payment(request):
 
 def payment_successful(request):
     from datetime import datetime
-    stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id', None)
     testing_model.objects.create(payload=str(checkout_session_id),text="checkout_session_id")
     session = stripe.checkout.Session.retrieve(checkout_session_id)
     testing_model.objects.create(payload=str(session),text="payment-session")
-    email             = session["customer_email"]
-    stripid          = session["id"]   
-    paymentstatus     = session["payment_status"]
-    customer          = session["customer"]
-    subscription      = session["subscription"]
-    invoice_id        = session["invoice"]
-    amount_total      = session["amount_total"] // 100
+    email               = session["customer_details"]["email"]
+    stripid             = session["id"]   
+    paymentstatus       = session["payment_status"]
+    customer            = session["customer"]
+    subscription        = session["subscription"]
+    invoice_id          = session["invoice"]
+    amount_total        = session["amount_total"] // 100
     timestamp = session[ "expires_at"]
     expiry = datetime.utcfromtimestamp(timestamp)
     
@@ -217,8 +222,7 @@ def payment_successful(request):
 
 @csrf_exempt
 def stripe_webhook(request):
-    WEB_SECRET = "whsec_D3MeMSkMgNMSwWFcM0FdxdpL65gKu1aQ"
-    stripe.api_key = settings.STRIPE_SECRET_KEY
+    WEB_SECRET = "whsec_52wtHIPwHlqwysQg1bpeasjwUJ5otqKa"
     time.sleep(10)
     payload = request.body
     signature_header = request.META['HTTP_STRIPE_SIGNATURE']
@@ -227,17 +231,23 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, signature_header, WEB_SECRET
         )
-        testing_model.objects.create(payload=str(event),text=str(event['type']))
-        customer = event["data"]["object"]["customer"]
-        invoiceid = event["data"]["object"]["invoice"]
-        
-        
-        get_obj=Purchase_History.objects.filter(customer_id=customer , invoice=invoiceid).last()
-        if get_obj:
-            get_obj.status=True 
-            get_obj.plan_auto_renewal=True 
-            get_obj.save()
-        
+        if event["type"] == "payment_intent.succeeded":
+            testing_model.objects.create(payload=str(event),text="payment_intent.succeeded")
+            customer = event["data"]["object"]["customer"]
+            invoiceid = event["data"]["object"]["invoice"]
+            get_obj=Purchase_History.objects.filter(customer_id=customer , invoice=invoiceid).last()
+            if get_obj:
+                get_obj.status=True 
+                get_obj.plan_auto_renewal=True 
+                get_obj.save()
+        elif event["type"] ==  "invoice.payment_succeeded":
+            testing_model.objects.create(payload=str(event),text="invoice.payment_succeeded")
+        elif event['type'] == "checkout.session.completed":
+            testing_model.objects.create(payload=str(event),text="checkout.session.completed")
+        elif event["type"] == 'customer.subscription.deleted':   
+            testing_model.objects.create(payload=str(event),text="customer.subscription.deleted")
+
+
     except ValueError as e:
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
@@ -251,13 +261,16 @@ def stripe_webhook(request):
 
 @api_view(['POST'])
 def generate_secret(request):
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-
+    # subscription = stripe.Subscription.retrieve("sub_1O0KpMSCw8UwFosbGCSzyh3N")
     endpoint = stripe.WebhookEndpoint.create(
     url='https://deyup.in/stripe_webhook/',
     enabled_events=[
         'payment_intent.payment_failed',
         'payment_intent.succeeded',
+        'invoice.payment_succeeded',
+        'invoice.payment_failed',
+        'checkout.session.completed',
+        'customer.subscription.deleted'
     ],
     )
     return JsonResponse(endpoint)
@@ -272,7 +285,6 @@ def cancel_subscription(request):
     if not obj.security_check(request) == 'ok':
         return obj.security_check(request)
 
-    stripe.api_key =  settings.STRIPE_SECRET_KEY
     getdata =  json.loads(request.body)
     subId = getdata['subscription'] 
     plan_id = getdata['plan_id'] 
