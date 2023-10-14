@@ -26,8 +26,6 @@ class UserManager(BaseUserManager):
             email,
             password=password,
             is_staff=True,
-
-
         )
         return user
 
@@ -117,20 +115,20 @@ class Strip_Plan(models.Model):
     
 
 class Purchase_History(models.Model):
-    user_id = models.ForeignKey(User , on_delete=models.CASCADE)
-    plan_id = models.ForeignKey(Strip_Plan , on_delete=models.CASCADE)
-    customer_id = models.CharField(max_length=100 , null=True,blank=True)
-    stripe_id = models.CharField(max_length=200)
-    invoice = models.CharField(max_length=100 , null=True , blank=True)
-    plan_start_date = models.DateField(null=True , blank=True)
-    plan_end_date = models.DateField(null=True , blank=True)
-    plan_auto_renewal = models.BooleanField(default=False)
-    subscripion_id = models.CharField(max_length=100 , null=True , blank=True)
+    user_id             = models.ForeignKey(User , on_delete=models.CASCADE)
+    plan_id             = models.ForeignKey(Strip_Plan , on_delete=models.CASCADE)
+    customer_id         = models.CharField(max_length=100 , null=True,blank=True)
+    stripe_id           = models.CharField(max_length=200)
+    invoice             = models.CharField(max_length=100 , null=True , blank=True)
+    plan_start_date     = models.DateField(null=True , blank=True)
+    plan_end_date       = models.DateField(null=True , blank=True)
+    plan_auto_renewal   = models.BooleanField(default=False)
+    subscripion_id      = models.CharField(max_length=100 , null=True , blank=True)
     subscription_amount = models.IntegerField(null=True , blank=True)
-    payment_status = models.CharField(max_length=20)
-    status = models.BooleanField(default=False)
-    created_at      = models.DateTimeField(auto_now_add=True)
-    updated_at      = models.DateTimeField(auto_now=True)
+    payment_status      = models.CharField(max_length=20)
+    status              = models.BooleanField(default=False)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    updated_at          = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user_id.email) + "Plan: " + str(self.plan_id.name)

@@ -15,7 +15,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
-from datetime import date
+from datetime import date , datetime
 # Create your views here.
 stripe.api_key = settings.STRIPE_SECRET_KEY
 class Security:
@@ -192,9 +192,7 @@ def create_payment(request):
 
 
 def payment_successful(request):
-    from datetime import datetime
     checkout_session_id = request.GET.get('session_id', None)
-    testing_model.objects.create(payload=str(checkout_session_id),text="checkout_session_id")
     session = stripe.checkout.Session.retrieve(checkout_session_id)
     testing_model.objects.create(payload=str(session),text="payment-session")
     email               = session["customer_details"]["email"]
@@ -230,22 +228,64 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, signature_header, WEB_SECRET
         )
-        if event["type"] == "payment_intent.succeeded":
-            testing_model.objects.create(payload=str(event),text="payment_intent.succeeded")
+        if event['type'] == "checkout.session.completed":
             customer = event["data"]["object"]["customer"]
-            invoiceid = event["data"]["object"]["invoice"]
-            get_obj=Purchase_History.objects.filter(customer_id=customer , invoice=invoiceid).last()
+            subscription = event["data"]["object"]["subscription"]
+            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
+            
             if get_obj:
                 get_obj.status=True 
                 get_obj.plan_auto_renewal=True 
                 get_obj.save()
+            
         elif event["type"] ==  "invoice.payment_succeeded":
             testing_model.objects.create(payload=str(event),text="invoice.payment_succeeded")
-        elif event['type'] == "checkout.session.completed":
-            testing_model.objects.create(payload=str(event),text="checkout.session.completed")
-        elif event["type"] == 'customer.subscription.deleted':   
-            testing_model.objects.create(payload=str(event),text="customer.subscription.deleted")
+            customer = event["data"]["object"]["customer"]
+            subscription = event["data"]["object"]["subscription"]
+            expired_at=event["data"]["object"]["period_end"]
+            invoice_id     = event["data"]["object"]["id"]
+            expiry = datetime.utcfromtimestamp(expired_at)
+            
+            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription , status=True).last()
+            if get_obj:
+                Purchase_History.objects.create(
+                    user_id = get_obj.user_id ,
+                    plan_id = get_obj.plan_id ,
+                    customer_id         = get_obj.customer_id ,
+                    stripe_id = get_obj.stripe_id ,
+                    invoice             = invoice_id ,
+                    plan_start_date     = date.today(),
+                    plan_end_date       = expiry.date(),
+                    plan_auto_renewal   = True ,
+                    subscripion_id      = get_obj.subscripion_id ,
+                    subscription_amount = get_obj.subscription_amount,
+                    payment_status      = "paid",
+                    status = True 
+                )
 
+        
+        elif event["type"] == 'customer.subscription.deleted':   
+            subscription     = event["data"]["object"]["id"]
+            customer         = event["data"]["object"]["customer"]
+            latest_invoice   = event["data"]["object"]["latest_invoice"]
+            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
+            if get_obj:
+                Purchase_History.objects.create(
+                        user_id             = get_obj.user_id ,
+                        plan_id             = get_obj.plan_id ,
+                        customer_id         = get_obj.customer_id ,
+                        stripe_id           = get_obj.stripe_id ,
+                        invoice             = latest_invoice ,
+                        plan_start_date     = date.today(),
+                        plan_end_date       = expiry.date(),
+                        plan_auto_renewal   = False ,
+                        subscripion_id      = get_obj.subscripion_id ,
+                        subscription_amount = get_obj.subscription_amount,
+                        payment_status      = "cancelled",
+                        status = False 
+                    )
+        else:
+            print("Unhandled Event")    
 
     except ValueError as e:
         return HttpResponse(status=400)
@@ -261,19 +301,25 @@ def stripe_webhook(request):
 @api_view(['POST'])
 def generate_secret(request):
     # subscription = stripe.Subscription.retrieve("sub_1O0KpMSCw8UwFosbGCSzyh3N")
-    endpoint = stripe.WebhookEndpoint.create(
-    url='https://deyup.in/stripe_webhook/',
-    enabled_events=[
-        'payment_intent.payment_failed',
-        'payment_intent.succeeded',
-        'invoice.payment_succeeded',
-        'invoice.payment_failed',
-        'checkout.session.completed',
-        'customer.subscription.deleted'
-    ],
+    # endpoint = stripe.WebhookEndpoint.create(
+    # url='https://deyup.in/stripe_webhook/',
+    # enabled_events=[
+    #     'payment_intent.payment_failed',
+    #     'payment_intent.succeeded',
+    #     'invoice.payment_succeeded',
+    #     'invoice.payment_failed',
+    #     'checkout.session.completed',
+    #     'customer.subscription.deleted'
+    # ],
+    # )
+    customers = stripe.Customer.list(email="mawazid1051@gmail.com")
+    subscriptions = stripe.Subscription.list(
+            customer="cus_OnwiXDsrJXjCjX",
+            status='all',
+            expand=['data.default_payment_method']
     )
-    return JsonResponse(endpoint)
-
+    single_subscription = stripe.Subscription.retrieve("sub_1O01ZVSCw8UwFosbIDBz9gBK")
+    return JsonResponse(single_subscription)
 
 
 @api_view(['POST'])
