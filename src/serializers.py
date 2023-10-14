@@ -52,7 +52,6 @@ class stripPlanSerializer(serializers.ModelSerializer):
             "payment_link",
             "image",
             "price",
-            "duration",
             "status",
             "created_at",
             "updated_at"
