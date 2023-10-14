@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import *
+from import_export.admin import ImportExportModelAdmin
 
 class UserAccountAdmin(UserAdmin):
     list_display=('email','username')
@@ -66,7 +67,7 @@ class Security_ModelAdmin(admin.ModelAdmin):
     )
 
 @admin.register(testing_model)
-class testing_modelAdmin(admin.ModelAdmin):
+class testing_modelAdmin(ImportExportModelAdmin,admin.ModelAdmin):
     list_display = (
         "text",
         "created_at",
