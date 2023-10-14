@@ -29,13 +29,11 @@ admin.site.register(User,UserAccountAdmin)
 @admin.register(Strip_Plan)
 class Strip_PlanAdmin(admin.ModelAdmin):
     list_display = (
-        "plan_duration",
         "name",
         "description",
         "payment_link",
         "image",
         "price",
-        "duration",
         "status",
         "created_at",
         "updated_at"

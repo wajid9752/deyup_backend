@@ -15,7 +15,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
-from datetime import date , datetime
+from datetime import date , datetime , timedelta
 # Create your views here.
 stripe.api_key = settings.STRIPE_SECRET_KEY
 class Security:
@@ -77,10 +77,13 @@ def user_login(request):
             user.save()
 
         refresh = RefreshToken.for_user(user)
+        new_time=datetime.now() + timedelta(minutes=20)
+        
         context= {
                 "data": {
                     'token': str(refresh.access_token),
                     'refresh_token': str(refresh),
+                    'token_expiry': new_time.strftime("%Y-%m-%d %H:%M:%S")
                     }
                     }
         return JsonResponse(context , status=status.HTTP_200_OK)
@@ -229,6 +232,7 @@ def stripe_webhook(request):
             payload, signature_header, WEB_SECRET
         )
         if event['type'] == "checkout.session.completed":
+            testing_model.objects.create(payload=str(event),text="checkout.session.completed")
             customer = event["data"]["object"]["customer"]
             subscription = event["data"]["object"]["subscription"]
             get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
@@ -318,6 +322,7 @@ def generate_secret(request):
             status='all',
             expand=['data.default_payment_method']
     )
+    # single_subscription=stripe.Subscription.get("sub_1O01ZVSCw8UwFosbIDBz9gBK")
     single_subscription = stripe.Subscription.retrieve("sub_1O01ZVSCw8UwFosbIDBz9gBK")
     return JsonResponse(single_subscription)
 
