@@ -1,5 +1,4 @@
-
-
+from decouple import config
 from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -10,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)g+44%54x8w(m%q61s&_7ju71q01ydseky0^!^ll3n)clx&2jc'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -31,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'src',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -100,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -159,6 +159,3 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
-
-STRIPE_SECRET_KEY = "sk_test_51MgLDhSCw8UwFosbFJJFSrxF6jSSFaOock1AtpKAwnjXQjMaH2oa5xh9X7ItywbtCdLWeITPtZwsx4Np3NZaMin600MhYEImAt"
-STRIPE_PRICE_ID="price_1NyCk0SCw8UwFosbptoyP7dS"

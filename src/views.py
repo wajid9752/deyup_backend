@@ -16,8 +16,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from reportlab.pdfgen import canvas
 from datetime import date , datetime , timedelta
+from decouple import config
 # Create your views here.
-stripe.api_key = settings.STRIPE_SECRET_KEY
+stripe.api_key =  config('STRIPE_SECRET_KEY')
 class Security:
     @staticmethod
     def security_check(request):
@@ -30,7 +31,6 @@ class Security:
             return Security.send_platform()
         
         return "ok"
-
     @staticmethod
     def send_client():
         response = JsonResponse({"data": {}}, status=status.HTTP_400_BAD_REQUEST)
@@ -121,7 +121,7 @@ def user_profile(request):
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
 
-    hist    = Purchase_History.objects.filter(user_id=obj)
+    hist    = Purchase_History.objects.filter(user_id=obj).exclude(payment_status="unpaid")
     history = Purchase_HistorySerializer(hist , many=True)
     data={'data':{
                 'user': serializer.data ,
@@ -156,7 +156,7 @@ def create_payment(request):
         getdata =   json.loads(request.body)
         planId =    getdata['plan_id'] 
         getPlan =   Strip_Plan.objects.get(id=planId)
-        domain_url = 'https://deyup.in/'
+        domain_url = config("DOMAIN_URL")
         #domain_url = 'http://127.0.0.1:8000/'
             
         checkout_session = stripe.checkout.Session.create(
@@ -222,7 +222,7 @@ def payment_successful(request):
 
 @csrf_exempt
 def stripe_webhook(request):
-    WEB_SECRET = "whsec_52wtHIPwHlqwysQg1bpeasjwUJ5otqKa"
+    WEB_SECRET =  config('WEB_SECRET')
     time.sleep(10)
     payload = request.body
     signature_header = request.META['HTTP_STRIPE_SIGNATURE']
