@@ -193,7 +193,6 @@ def create_payment(request):
         return JsonResponse(data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 def payment_successful(request):
     checkout_session_id = request.GET.get('session_id', None)
     session = stripe.checkout.Session.retrieve(checkout_session_id)
@@ -266,6 +265,8 @@ def stripe_webhook(request):
                     payment_status      = "paid",
                     status = True 
                 )
+        elif event["type"] ==  'invoice.payment_failed':
+            testing_model.objects.create(payload=str(event),text="invoice.payment_failed")
 
         
         elif event["type"] == 'customer.subscription.deleted':   
@@ -305,26 +306,26 @@ def stripe_webhook(request):
 @api_view(['POST'])
 def generate_secret(request):
     # subscription = stripe.Subscription.retrieve("sub_1O0KpMSCw8UwFosbGCSzyh3N")
-    # endpoint = stripe.WebhookEndpoint.create(
-    # url='https://deyup.in/stripe_webhook/',
-    # enabled_events=[
-    #     'payment_intent.payment_failed',
-    #     'payment_intent.succeeded',
-    #     'invoice.payment_succeeded',
-    #     'invoice.payment_failed',
-    #     'checkout.session.completed',
-    #     'customer.subscription.deleted'
-    # ],
-    # )
-    customers = stripe.Customer.list(email="mawazid1051@gmail.com")
-    subscriptions = stripe.Subscription.list(
-            customer="cus_OnwiXDsrJXjCjX",
-            status='all',
-            expand=['data.default_payment_method']
+    endpoint = stripe.WebhookEndpoint.create(
+    url='https://deyup.in/stripe_webhook/',
+    enabled_events=[
+        'payment_intent.payment_failed',
+        'payment_intent.succeeded',
+        'invoice.payment_succeeded',
+        'invoice.payment_failed',
+        'checkout.session.completed',
+        'customer.subscription.deleted'
+    ],
     )
-    # single_subscription=stripe.Subscription.get("sub_1O01ZVSCw8UwFosbIDBz9gBK")
-    single_subscription = stripe.Subscription.retrieve("sub_1O01ZVSCw8UwFosbIDBz9gBK")
-    return JsonResponse(single_subscription)
+    # customers = stripe.Customer.list(email="mawazid1051@gmail.com")
+    # subscriptions = stripe.Subscription.list(
+    #         customer="cus_OnwiXDsrJXjCjX",
+    #         status='all',
+    #         expand=['data.default_payment_method']
+    # )
+    # # single_subscription=stripe.Subscription.get("sub_1O01ZVSCw8UwFosbIDBz9gBK")
+    # single_subscription = stripe.Subscription.retrieve("sub_1O01ZVSCw8UwFosbIDBz9gBK")
+    return JsonResponse(endpoint)
 
 
 @api_view(['POST'])
