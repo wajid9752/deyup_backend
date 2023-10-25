@@ -233,11 +233,12 @@ def stripe_webhook(request):
         if event['type'] == "checkout.session.completed":
             testing_model.objects.create(payload=str(event),text="checkout.session.completed")
             customer = event["data"]["object"]["customer"]
+            gen_id = event["data"]["object"]["id"]
             subscription = event["data"]["object"]["subscription"]
-            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
-            
+            get_obj=Purchase_History.objects.filter(customer_id=customer ,stripe_id=gen_id).last()
             if get_obj:
                 get_obj.status=True 
+                get_obj.subscripion_id = subscription
                 get_obj.plan_auto_renewal=True 
                 get_obj.save()
             
