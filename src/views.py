@@ -18,6 +18,7 @@ from reportlab.pdfgen import canvas
 from datetime import date , datetime , timedelta
 from decouple import config
 # Create your views here.
+
 stripe.api_key =  config('STRIPE_SECRET_KEY')
 class Security:
     @staticmethod
@@ -148,7 +149,6 @@ def plans_api(request):
 @authentication_classes([JWTAuthentication])
 def create_payment(request):
     try:
-        
         obj = Security()
         if not obj.security_check(request) == 'ok':
             return obj.security_check(request)
@@ -172,11 +172,6 @@ def create_payment(request):
                     }
                 ]
             )
-        testing_model.objects.create(
-            payload = str(checkout_session) ,
-            text = "Create Payment Api"
-        )
-
         Purchase_History.objects.create(
             user_id = request.user , 
             plan_id = getPlan,
@@ -220,7 +215,7 @@ def payment_successful(request):
     return HttpResponse("All Good Payment is success")
 
 @csrf_exempt
-def stripe_webhook(request):
+def stripe_webhook_checkout(request):
     WEB_SECRET =  config('WEB_SECRET')
     time.sleep(10)
     payload = request.body
@@ -232,9 +227,11 @@ def stripe_webhook(request):
         )
         if event['type'] == "checkout.session.completed":
             testing_model.objects.create(payload=str(event),text="checkout.session.completed")
-            customer = event["data"]["object"]["customer"]
-            gen_id = event["data"]["object"]["id"]
-            subscription = event["data"]["object"]["subscription"]
+            mydata = event["data"]["object"]
+            customer = mydata.get("customer")
+            gen_id   = mydata.get("id")
+            subscription = mydata.get("subscription")
+            
             get_obj=Purchase_History.objects.filter(customer_id=customer ,stripe_id=gen_id).last()
             if get_obj:
                 get_obj.status=True 
@@ -242,54 +239,6 @@ def stripe_webhook(request):
                 get_obj.plan_auto_renewal=True 
                 get_obj.save()
             
-        elif event["type"] ==  "invoice.payment_succeeded":
-            testing_model.objects.create(payload=str(event),text="invoice.payment_succeeded")
-            customer = event["data"]["object"]["customer"]
-            subscription = event["data"]["object"]["subscription"]
-            expired_at=event["data"]["object"]["period_end"]
-            invoice_id     = event["data"]["object"]["id"]
-            expiry = datetime.utcfromtimestamp(expired_at)
-            
-            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription , status=True).last()
-            if get_obj:
-                Purchase_History.objects.create(
-                    user_id = get_obj.user_id ,
-                    plan_id = get_obj.plan_id ,
-                    customer_id         = get_obj.customer_id ,
-                    stripe_id = get_obj.stripe_id ,
-                    invoice             = invoice_id ,
-                    plan_start_date     = date.today(),
-                    plan_end_date       = expiry.date(),
-                    plan_auto_renewal   = True ,
-                    subscripion_id      = get_obj.subscripion_id ,
-                    subscription_amount = get_obj.subscription_amount,
-                    payment_status      = "paid",
-                    status = True 
-                )
-        elif event["type"] ==  'invoice.payment_failed':
-            testing_model.objects.create(payload=str(event),text="invoice.payment_failed")
-
-        
-        elif event["type"] == 'customer.subscription.deleted':   
-            subscription     = event["data"]["object"]["id"]
-            customer         = event["data"]["object"]["customer"]
-            latest_invoice   = event["data"]["object"]["latest_invoice"]
-            get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
-            if get_obj:
-                Purchase_History.objects.create(
-                        user_id             = get_obj.user_id ,
-                        plan_id             = get_obj.plan_id ,
-                        customer_id         = get_obj.customer_id ,
-                        stripe_id           = get_obj.stripe_id ,
-                        invoice             = latest_invoice ,
-                        plan_start_date     = date.today(),
-                        plan_end_date       = expiry.date(),
-                        plan_auto_renewal   = False ,
-                        subscripion_id      = get_obj.subscripion_id ,
-                        subscription_amount = get_obj.subscription_amount,
-                        payment_status      = "cancelled",
-                        status = False 
-                    )
         else:
             print("Unhandled Event")    
 
@@ -303,6 +252,72 @@ def stripe_webhook(request):
         time.sleep(15)
     return HttpResponse(status=200)
 
+def webhook_recurring(request):
+    WEB_SECRET =  config('WEB_SECRET')
+    time.sleep(10)
+    payload = request.body
+    signature_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+    
+    if event["type"] ==  "invoice.payment_succeeded":
+        mydata = event["data"]["object"]
+        customer = mydata.get("customer")
+        subscription = mydata.get("subscription")
+        expired_at= mydata.get("period_end")
+        invoice_id     =  mydata.get("id")
+        
+        expiry = datetime.utcfromtimestamp(expired_at)
+        get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription , status=True).last()
+        
+        if get_obj:
+            Purchase_History.objects.create(
+                user_id = get_obj.user_id ,
+                plan_id = get_obj.plan_id ,
+                customer_id         = get_obj.customer_id ,
+                stripe_id = get_obj.stripe_id ,
+                invoice             = invoice_id ,
+                plan_start_date     = date.today(),
+                plan_end_date       = expiry.date(),
+                plan_auto_renewal   = True ,
+                subscripion_id      = get_obj.subscripion_id ,
+                subscription_amount = get_obj.subscription_amount,
+                payment_status      = "paid",
+                status = True 
+            )
+    elif event["type"] ==  'invoice.payment_failed':
+            testing_model.objects.create(payload=str(event),text="invoice.payment_failed")
+
+def webhook_subscription_canceled(request):
+    WEB_SECRET =  config('WEB_SECRET')
+    time.sleep(10)
+    payload = request.body
+    signature_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+
+    if event["type"] == 'customer.subscription.deleted':   
+        mydata = event["data"]["object"]
+        subscription     = mydata.get("id")
+        customer         = mydata.get("customer")
+        latest_invoice   = mydata.get("latest_invoice")
+        expired_at       = mydata.get("period_end")
+        expiry = datetime.utcfromtimestamp(expired_at)
+        
+        get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
+        if get_obj:
+            Purchase_History.objects.create(
+                    user_id             = get_obj.user_id ,
+                    plan_id             = get_obj.plan_id ,
+                    customer_id         = get_obj.customer_id ,
+                    stripe_id           = get_obj.stripe_id ,
+                    invoice             = latest_invoice ,
+                    plan_start_date     = date.today(),
+                    plan_end_date       = expiry.date(),
+                    plan_auto_renewal   = False ,
+                    subscripion_id      = get_obj.subscripion_id ,
+                    subscription_amount = get_obj.subscription_amount,
+                    payment_status      = "cancelled",
+                    status = False 
+                )            
 
 @api_view(['POST'])
 def generate_secret(request):
@@ -333,31 +348,43 @@ def generate_secret(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
 def cancel_subscription(request):
-    obj = Security()
-    if not obj.security_check(request) == 'ok':
-        return obj.security_check(request)
+    try:
+        obj = Security()
+        if not obj.security_check(request) == 'ok':
+            return obj.security_check(request)
 
-    getdata =  json.loads(request.body)
-    subId = getdata['subscription'] 
-    plan_id = getdata['plan_id'] 
-    
-    retrieve_sub = stripe.Subscription.retrieve(subId)
-    sub_status = retrieve_sub.status
-    
-    if sub_status == "active": 
-        mytest=stripe.Subscription.cancel(subId)
-        Purchase_History.objects.filter(id=plan_id).update(status=False,plan_auto_renewal=False)
-        msg = "Your subscription is canceled Successfully"
-    
-    elif sub_status == "canceled":
-         msg = "Your subscription is alreday canceled"    
-    
-    data={'data':{} }
-  
-    response = JsonResponse(data ,status=status.HTTP_200_OK)
-    response['Message'] = msg
-    return response
+        getdata =  json.loads(request.body)
+        subId = getdata['subscription'] 
+        plan_id = getdata['plan_id'] 
+        
+        retrieve_sub = stripe.Subscription.retrieve(subId)
+        sub_status = retrieve_sub.status
+        
+        if sub_status == "active": 
 
+            stripe.Subscription.modify(
+                subId,
+                cancel_at_period_end=True,
+                )
+            Purchase_History.objects.filter(id=plan_id).update(status=False,
+                                                               plan_auto_renewal=False , 
+                                                               payment_status="cancelled")
+            msg = "Your subscription is canceled Successfully"
+        
+        elif sub_status == "canceled":
+            msg = "Your subscription is alreday canceled"    
+        
+        data={'data':{} }
+    
+        response = JsonResponse(data ,status=status.HTTP_200_OK)
+        response['Message'] = msg
+        return response
+    
+    except Exception as e:
+        print(e)
+        response = JsonResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response['Message'] = str(e)
+        return response
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -389,3 +416,21 @@ def generate_pdf(request):
     p.showPage()
     p.save()
     return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def subscription_history(request):
+    try:
+        subscriptions=Purchase_History.objects.filter(user_id=request.user).exclude(subscripion_id=None)
+        myhistory=Purchase_HistorySerializer(subscriptions , many=True).data
+        data={'data':{'subscriptions':myhistory} }
+        response = JsonResponse(data ,status=status.HTTP_200_OK)
+        response['Message'] = "Subscriptions fetched Successfully"
+        return response
+    except Exception as e:
+        response = JsonResponse({'data':{} } ,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response['Message'] = f"{e}"
+        return response
+
