@@ -226,7 +226,6 @@ def stripe_webhook_checkout(request):
             payload, signature_header, WEB_SECRET
         )
         if event['type'] == "checkout.session.completed":
-            testing_model.objects.create(payload=str(event),text="checkout.session.completed")
             mydata = event["data"]["object"]
             customer = mydata.get("customer")
             gen_id   = mydata.get("id")
@@ -253,12 +252,14 @@ def stripe_webhook_checkout(request):
     return HttpResponse(status=200)
 
 def webhook_recurring(request):
-    WEB_SECRET =  config('WEB_SECRET')
+    WEB_SECRET =  config('WEB_SECRET_Invoice')
     time.sleep(10)
     payload = request.body
     signature_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
-    
+    event = stripe.Webhook.construct_event(
+            payload, signature_header, WEB_SECRET
+        )
     if event["type"] ==  "invoice.payment_succeeded":
         mydata = event["data"]["object"]
         customer = mydata.get("customer")
@@ -288,12 +289,14 @@ def webhook_recurring(request):
             testing_model.objects.create(payload=str(event),text="invoice.payment_failed")
 
 def webhook_subscription_canceled(request):
-    WEB_SECRET =  config('WEB_SECRET')
+    WEB_SECRET =  config('WEB_SECRET_Delete')
     time.sleep(10)
     payload = request.body
     signature_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
-
+    event = stripe.Webhook.construct_event(
+            payload, signature_header, WEB_SECRET
+        )
     if event["type"] == 'customer.subscription.deleted':   
         mydata = event["data"]["object"]
         subscription     = mydata.get("id")
