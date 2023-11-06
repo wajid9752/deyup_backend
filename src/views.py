@@ -245,10 +245,7 @@ def stripe_webhook_checkout(request):
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
         return HttpResponse(status=400)
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        session_id = session.get('id', None)
-        time.sleep(15)
+  
     return HttpResponse(status=200)
 @csrf_exempt
 def webhook_recurring(request):
@@ -293,10 +290,7 @@ def webhook_recurring(request):
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
         return HttpResponse(status=400)
-    if event['type'] == 'invoice.payment_succeeded':
-        session = event['data']['object']
-        session_id = session.get('id', None)
-        time.sleep(15)
+    
     return HttpResponse(status=200)        
 
 @csrf_exempt
@@ -339,10 +333,7 @@ def webhook_subscription_canceled(request):
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
         return HttpResponse(status=400)
-    if event['type'] == 'customer.subscription.deleted':
-        session = event['data']['object']
-        session_id = session.get('id', None)
-        time.sleep(15)
+   
     return HttpResponse(status=200)            
 
 @api_view(['POST'])
