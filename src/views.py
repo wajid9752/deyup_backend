@@ -250,7 +250,7 @@ def stripe_webhook_checkout(request):
         session_id = session.get('id', None)
         time.sleep(15)
     return HttpResponse(status=200)
-
+@csrf_exempt
 def webhook_recurring(request):
     WEB_SECRET =  config('WEB_SECRET_Invoice')
     time.sleep(10)
@@ -287,7 +287,7 @@ def webhook_recurring(request):
             )
     elif event["type"] ==  'invoice.payment_failed':
             testing_model.objects.create(payload=str(event),text="invoice.payment_failed")
-
+@csrf_exempt
 def webhook_subscription_canceled(request):
     WEB_SECRET =  config('WEB_SECRET_Delete')
     time.sleep(10)
@@ -304,8 +304,9 @@ def webhook_subscription_canceled(request):
         latest_invoice   = mydata.get("latest_invoice")
         expired_at       = mydata.get("period_end")
         expiry = datetime.utcfromtimestamp(expired_at)
-        
+
         get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
+        
         if get_obj:
             Purchase_History.objects.create(
                     user_id             = get_obj.user_id ,
