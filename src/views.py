@@ -311,9 +311,6 @@ def webhook_subscription_canceled(request):
             subscription     = mydata.get("id")
             customer         = mydata.get("customer")
             latest_invoice   = mydata.get("latest_invoice")
-            expired_at       = mydata.get("period_end")
-            expiry = datetime.utcfromtimestamp(expired_at)
-
             get_obj=Purchase_History.objects.filter(customer_id=customer , subscripion_id=subscription).last()
             
             if get_obj:
@@ -324,7 +321,6 @@ def webhook_subscription_canceled(request):
                         stripe_id           = get_obj.stripe_id ,
                         invoice             = latest_invoice ,
                         plan_start_date     = date.today(),
-                        plan_end_date       = expiry.date(),
                         plan_auto_renewal   = False ,
                         subscripion_id      = get_obj.subscripion_id ,
                         subscription_amount = get_obj.subscription_amount,
