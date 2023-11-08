@@ -305,6 +305,7 @@ def webhook_subscription_canceled(request):
         event = stripe.Webhook.construct_event(
             payload, signature_header, WEB_SECRET
         )
+        testing_model.objects.create(payload=str(event) , text="customer.subscription.deleted")
         if event["type"] == 'customer.subscription.deleted':   
             mydata = event["data"]["object"]
             subscription     = mydata.get("id")
