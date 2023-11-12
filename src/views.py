@@ -121,8 +121,7 @@ def user_profile(request):
 
     obj=User.objects.get(email=request.user.email)
     serializer=ProfileSerializer(obj , many=False)
-
-    hist    = Purchase_History.objects.filter(user_id=obj,payment_status="paid")
+    hist    = Purchase_History.objects.filter(user_id=obj,payment_status="paid" ,plan_end_date__gte = date.today())
     history = Purchase_HistorySerializer(hist , many=True)
     data={'data':{
                 'user': serializer.data ,
